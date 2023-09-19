@@ -526,7 +526,7 @@ public class Lexer implements ILexer {
 
 			}
 		}
-		return new Token(EOF, 0, 0, null, null);
+		return new Token(EOF, chars.length, 0, null, null);
 	}
 
 	private void makeMap() {
