@@ -635,4 +635,23 @@ class LexerTest {
 		checkToken(RARROW, lexer.next());
 		checkToken(BOX, lexer.next());
 	}
+
+	@Test
+	void unitTestSemi() throws LexicalException {
+		String input = ";";
+		ILexer lexer = ComponentFactory.makeLexer(input);
+		checkToken(SEMI, ";", lexer.next());
+		checkEOF(lexer.next());
+	}
+
+
+	@Test
+	void unitTestPound() throws LexicalException {
+		String input = "#";
+		ILexer lexer = ComponentFactory.makeLexer(input);
+		LexicalException e = assertThrows(LexicalException.class, () -> lexer.next());
+		show("Error message from unitTestPound: " + e.getMessage());
+		checkEOF(lexer.next());
+	}
+
 }

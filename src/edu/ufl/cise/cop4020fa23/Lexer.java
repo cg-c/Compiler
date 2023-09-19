@@ -61,11 +61,11 @@ public class Lexer implements ILexer {
 	@Override
 	public IToken next() throws LexicalException {
 		if (currentToken > tokens.size()) {
-			return new Token(EOF, 0, 0, null, null);
+			return new Token(EOF, input.length(), 0, null, null);
 			//throw new LexicalException("No more tokens");
 		}
 		if (pos == input.length()) {
-			return new Token(EOF, 0, 0, null, null);
+			return new Token(EOF, input.length(), 0, null, null);
 		}
 
 		return storeAllTokens();
@@ -108,6 +108,7 @@ public class Lexer implements ILexer {
 						}
 						case '#' -> {
 							if (pos+1 >= chars.length) {
+								pos++;
 								throw new LexicalException("invalid input");
 							}
 							// make sure its ## --> ignore till \n
