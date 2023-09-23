@@ -33,7 +33,6 @@ public class Lexer implements ILexer {
 	// I also don't know where to put these, so they're here for now :,)
 
 	State state;
-	ArrayList<Token> tokens = new ArrayList<Token>();
 	Map<String, Kind> rWords = new HashMap<String, Kind>();
 	int currentToken;
 	int pos = 0;
@@ -44,7 +43,7 @@ public class Lexer implements ILexer {
 	char[] chars;
 	// if not in map --> create IDENT token
 
-	public Lexer(String input) throws LexicalException {
+	public Lexer(String input) {
 		this.input = input;
 		startPos = 0;
 		line = 1;
@@ -60,10 +59,6 @@ public class Lexer implements ILexer {
 
 	@Override
 	public IToken next() throws LexicalException {
-		if (currentToken > tokens.size()) {
-			return new Token(EOF, input.length(), 0, null, null);
-			//throw new LexicalException("No more tokens");
-		}
 		if (pos == input.length()) {
 			return new Token(EOF, input.length(), 0, null, null);
 		}
@@ -86,7 +81,7 @@ public class Lexer implements ILexer {
 			char ch;
 			if (pos >= chars.length) {
 				ch = ' ';
-				pos++;
+				//pos++;
 			} else {
 				ch = chars[pos];
 			}
@@ -135,7 +130,6 @@ public class Lexer implements ILexer {
 						}
 						case '0' -> {
 							t = new Token(Kind.NUM_LIT, pos++, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							state = State.START;
 							return t;
 						}
@@ -151,19 +145,16 @@ public class Lexer implements ILexer {
 						}
 						case ',' -> {
 							t = new Token(Kind.COMMA, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
 						case ';' -> {
 							t = new Token(Kind.SEMI, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
 						case '?' -> {
 							t = new Token(Kind.QUESTION, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -174,13 +165,11 @@ public class Lexer implements ILexer {
 						}
 						case '(' -> {
 							t = new Token(Kind.LPAREN, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
 						case ')' -> {
 							t = new Token(Kind.RPAREN, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -201,7 +190,6 @@ public class Lexer implements ILexer {
 						}
 						case ']' -> {
 							t = new Token(Kind.RSQUARE, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -212,7 +200,6 @@ public class Lexer implements ILexer {
 						}
 						case '!' -> {
 							t = new Token(Kind.BANG, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -228,7 +215,6 @@ public class Lexer implements ILexer {
 						}
 						case '+' -> {
 							t = new Token(Kind.PLUS, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -244,19 +230,16 @@ public class Lexer implements ILexer {
 						}
 						case '/' -> {
 							t = new Token(Kind.DIV, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
 						case '%' -> {
 							t = new Token(Kind.MOD, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
 						case '^' -> {
 							t = new Token(Kind.RETURN, pos, 1, chars, new SourceLocation(line, column++));
-							tokens.add(t);
 							pos++;
 							return t;
 						}
@@ -271,7 +254,6 @@ public class Lexer implements ILexer {
 							//column--; //no idea why
 							t = new Token(Kind.AND, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
@@ -280,7 +262,6 @@ public class Lexer implements ILexer {
 							//column--;
 							t = new Token(Kind.BITAND, startPos, 1, chars, new SourceLocation(line, startCol));
 							//column++;
-							tokens.add(t);
 							//pos++;
 							state = State.START;
 							return t;
@@ -292,14 +273,12 @@ public class Lexer implements ILexer {
 						case ']' -> {
 							t = new Token(Kind.BOX, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.LSQUARE, startPos, 1, chars, new SourceLocation(line, startCol));
-							tokens.add(t);
 							//pos++;
 							state = State.START;
 							return t;
@@ -319,14 +298,12 @@ public class Lexer implements ILexer {
 							String str = new String(chars, startPos, pos - startPos);
 							if (rWords.containsKey(str)) {
 								t = new Token(rWords.get(str), startPos, pos - startPos, chars, new SourceLocation(line, startCol));
-								tokens.add(t);
 								//pos++; //less sure about this change
 								state = State.START;
 								startCol = column;
 								return t;
 							}
 							t = new Token(Kind.IDENT, startPos, pos - startPos, chars, new SourceLocation(line, startCol));
-							tokens.add(t);
 							state = State.START;
 							return t;
 						}
@@ -345,7 +322,6 @@ public class Lexer implements ILexer {
 								throw new LexicalException("invalid input");
 							}
 							t = new Token(Kind.NUM_LIT, startPos, pos - startPos, chars, new SourceLocation(line, startCol));
-							tokens.add(t);
 							state = State.START;
 							return t;
 						}
@@ -356,16 +332,12 @@ public class Lexer implements ILexer {
 						case '>' -> {
 							t = new Token(Kind.BLOCK_CLOSE, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.COLON, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -376,16 +348,12 @@ public class Lexer implements ILexer {
 						case '=' -> {
 							t = new Token(Kind.EQ, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.ASSIGN, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -396,7 +364,6 @@ public class Lexer implements ILexer {
 						case '"' -> {
 							t = new Token(Kind.STRING_LIT, startPos, pos - startPos + 1, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
@@ -418,16 +385,12 @@ public class Lexer implements ILexer {
 						case '>' -> {
 							t = new Token(Kind.RARROW, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.MINUS, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -438,7 +401,6 @@ public class Lexer implements ILexer {
 						case '=' -> {
 							t = new Token(Kind.LE, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
@@ -446,16 +408,12 @@ public class Lexer implements ILexer {
 						case ':' -> {
 							t = new Token(Kind.BLOCK_OPEN, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.LT, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -466,16 +424,12 @@ public class Lexer implements ILexer {
 						case '=' -> {
 							t = new Token(Kind.GE, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.GT, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -486,16 +440,12 @@ public class Lexer implements ILexer {
 						case '|' -> {
 							t = new Token(Kind.OR, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.BITOR, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
@@ -506,16 +456,12 @@ public class Lexer implements ILexer {
 						case '*' -> {
 							t = new Token(Kind.EXP, startPos, 2, chars, new SourceLocation(line, startCol));
 							column++;
-							tokens.add(t);
 							pos++;
 							state = State.START;
 							return t;
 						}
 						default -> {
 							t = new Token(Kind.TIMES, startPos, 1, chars, new SourceLocation(line, startCol));
-							//column++;
-							tokens.add(t);
-							//pos++;
 							state = State.START;
 							return t;
 						}
