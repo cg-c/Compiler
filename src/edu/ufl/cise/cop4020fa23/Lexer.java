@@ -112,12 +112,13 @@ public class Lexer implements ILexer {
 							if (chars[++pos] != '#') {
 								throw new LexicalException("invalid input");
 							}
-							while (ch != '\n') {
+							while (ch != '\n' && pos + 1 < chars.length) {
 								ch = chars[++pos];
 								if (ch == '␡') {
 									throw new LexicalException("invalid input");
 								}
 							}
+							++pos;
 						}
 						case '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
 								'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
@@ -360,25 +361,25 @@ public class Lexer implements ILexer {
 					}
 				}
 				case IN_STRLIT -> {
-					switch (ch) {
-						case '"' -> {
-							t = new Token(Kind.STRING_LIT, startPos, pos - startPos + 1, chars, new SourceLocation(line, startCol));
-							column++;
-							pos++;
-							state = State.START;
-							return t;
-						}
-						default -> {
-							int ascii = (int) ch;
-							if (ascii >= 32 && ascii <= 255) {
-								pos++;
-								column++;
-							}
-							else {
-								throw new LexicalException("lexical error");
-							}
-						}
+                    if (ch == '"') {
+                        t = new Token(Kind.STRING_LIT, startPos, pos - startPos + 1, chars, new SourceLocation(line, startCol));
+                        column++;
+                        pos++;
+                        state = State.START;
+                        return t;
+                    }
+					else if (pos + 1 >= chars.length) {
+						throw new LexicalException("Not Valid String Lit");
 					}
+					else {
+                        int ascii = (int) ch;
+                        if (ascii >= 32 && ascii <= 255) {
+                            pos++;
+                            column++;
+                        } else {
+                            throw new LexicalException("lexical error");
+                        }
+                    }
 				}
 				case HAVE_MINUS -> {
 					switch (ch) {
