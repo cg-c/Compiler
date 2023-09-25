@@ -460,4 +460,27 @@ class ExpressionParserTest_starter {
 		});
 	}
 
+	@Test
+	void test33() throws PLCCompilerException {
+		String input = """
+				3 4
+				""";
+		AST ast = getAST(input);
+		Expr v0 = ((ConditionalExpr) ast).getGuardExpr();
+		checkNumLitExpr(v0, 3);
+		Expr v1 = ((ConditionalExpr) ast).getGuardExpr();
+		checkNumLitExpr(v1, 4);
+	}
+
+	@Test
+	void test34() throws PLCCompilerException {
+		String input = """
+				 d f
+				""";
+		AST ast = getAST(input);
+		Expr v0 = ((ConditionalExpr) ast).getGuardExpr();
+		checkIdentExpr(v0, "d");
+		Expr v2 = ((ConditionalExpr) ast).getFalseExpr();
+		checkIdentExpr(v2, "f");
+	}
 }

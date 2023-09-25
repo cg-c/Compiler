@@ -9,41 +9,7 @@
  */
 package edu.ufl.cise.cop4020fa23;
 
-import static edu.ufl.cise.cop4020fa23.Kind.AND;
-import static edu.ufl.cise.cop4020fa23.Kind.BANG;
-import static edu.ufl.cise.cop4020fa23.Kind.BITAND;
-import static edu.ufl.cise.cop4020fa23.Kind.BITOR;
-import static edu.ufl.cise.cop4020fa23.Kind.COLON;
-import static edu.ufl.cise.cop4020fa23.Kind.COMMA;
-import static edu.ufl.cise.cop4020fa23.Kind.DIV;
-import static edu.ufl.cise.cop4020fa23.Kind.EOF;
-import static edu.ufl.cise.cop4020fa23.Kind.EQ;
-import static edu.ufl.cise.cop4020fa23.Kind.EXP;
-import static edu.ufl.cise.cop4020fa23.Kind.GE;
-import static edu.ufl.cise.cop4020fa23.Kind.GT;
-import static edu.ufl.cise.cop4020fa23.Kind.IDENT;
-import static edu.ufl.cise.cop4020fa23.Kind.LE;
-import static edu.ufl.cise.cop4020fa23.Kind.LPAREN;
-import static edu.ufl.cise.cop4020fa23.Kind.LSQUARE;
-import static edu.ufl.cise.cop4020fa23.Kind.LT;
-import static edu.ufl.cise.cop4020fa23.Kind.MINUS;
-import static edu.ufl.cise.cop4020fa23.Kind.MOD;
-import static edu.ufl.cise.cop4020fa23.Kind.NUM_LIT;
-import static edu.ufl.cise.cop4020fa23.Kind.OR;
-import static edu.ufl.cise.cop4020fa23.Kind.PLUS;
-import static edu.ufl.cise.cop4020fa23.Kind.QUESTION;
-import static edu.ufl.cise.cop4020fa23.Kind.RARROW;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_blue;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_green;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_height;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_red;
-import static edu.ufl.cise.cop4020fa23.Kind.RES_width;
-import static edu.ufl.cise.cop4020fa23.Kind.RPAREN;
-import static edu.ufl.cise.cop4020fa23.Kind.RSQUARE;
-import static edu.ufl.cise.cop4020fa23.Kind.STRING_LIT;
-import static edu.ufl.cise.cop4020fa23.Kind.TIMES;
-import static edu.ufl.cise.cop4020fa23.Kind.CONST;
-
+import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -64,6 +30,9 @@ import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
+
+import static edu.ufl.cise.cop4020fa23.Kind.*;
+
 /**
 Expr::=  ConditionalExpr | LogicalOrExpr    
 ConditionalExpr ::=  ?  Expr  :  Expr  :  Expr 
@@ -88,7 +57,6 @@ public class ExpressionParser implements IParser {
 	
 	final ILexer lexer;
 	private IToken t; // holds curr token
-	private ArrayList<IToken> tokenz = new ArrayList<IToken>();
 	private int listPos = 0;
 	/**
 	 * @param lexer
@@ -97,7 +65,8 @@ public class ExpressionParser implements IParser {
 	public ExpressionParser(ILexer lexer) throws LexicalException {
 		super();
 		this.lexer = lexer;
-		t = lexer.next();
+		IToken cur = lexer.next();
+		t = cur;
 	}
 
 	@Override
@@ -105,26 +74,25 @@ public class ExpressionParser implements IParser {
 		// throw error for empty string or smt
 		// while theres tokens/not eof --> add tokens to array
 
-		Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
+		//Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
+		Expr e = priExpr();
 		return e;
 	}
 
 	private Expr expr() throws PLCCompilerException {
-		// this just checks if its a IF or OR kind --> returns matching expression
-		IToken firstToken = t;
+//		IToken firstT = t;
 
 		if (isKind(Kind.RES_if)) {
 			return condExpr();
 		}
-		else if (isKind(BITOR)) {
-			return logOrExpr();
-		}
 		else {
-			throw new PLCCompilerException("Not IF or OR");
+			return logOrExpr();
 		}
 	}
 
 	ConditionalExpr condExpr() throws PLCCompilerException {
+
+		IToken first = t; // or token b4 t??? I think its the one before t
 
 		if (!isKind(QUESTION)) {
 			throw new PLCCompilerException("Token not ?");
@@ -144,26 +112,32 @@ public class ExpressionParser implements IParser {
 
 		Expr c = expr();
 
-		return new ConditionalExpr(t, a, b, c);
+		return new ConditionalExpr(first, a, b, c);
 	}
 
 	Expr logOrExpr() throws PLCCompilerException {
+		IToken first = t;
 		Expr left = logAndExpr();
 
 		while (isKind(OR, BITOR)) {
 			// something --> op
+			IToken op = t;
 			Expr right = logAndExpr();
+			left = new BinaryExpr(first, left, op, right);
 		}
 
 		return left;
 	}
 
 	Expr logAndExpr() throws PLCCompilerException {
+		IToken first = t;
 		Expr left = cmpExpr();
 
 		while (isKind(AND, BITAND)) {
 			// something --> op
+			IToken op = t;
 			Expr right = cmpExpr();
+			left = new BinaryExpr(first, left, op, right);
 		}
 
 		return left;
@@ -174,14 +148,25 @@ public class ExpressionParser implements IParser {
 
 		while (isKind(GT, LT, GE, LE, EQ)) {
 			// something --> op
+			IToken op = t;
 			Expr right = powExpr();
+			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
 		return left;
 	}
 
 	Expr powExpr() throws PLCCompilerException {
-		return null;
+		Expr add = addExpr();
+
+		if (isKind(EXP)) {
+			// save exp as op
+			IToken op = t;
+			Expr right = powExpr();
+			add = new BinaryExpr(op, add, op, right); // might be wrong
+		}
+
+		return add;
 	}
 
 	Expr addExpr() throws PLCCompilerException {
@@ -189,7 +174,9 @@ public class ExpressionParser implements IParser {
 
 		while (isKind(PLUS, MINUS)) {
 			// something --> op
+			IToken op = t;
 			Expr right = multExpr();
+			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
 		return left;
@@ -200,9 +187,9 @@ public class ExpressionParser implements IParser {
 
 		while (isKind(TIMES, DIV, MOD)) {
 			// save curr token as op to pass into Binary w/ right
-			IToken op = tokenz.get(listPos); //token at curr position
+			IToken op = t; //token at curr position
 			Expr right = uExpr();
-			left = new BinaryExpr(t, left, op, right);
+			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
 		return left;
@@ -210,21 +197,38 @@ public class ExpressionParser implements IParser {
 	}
 
 	Expr uExpr() throws PLCCompilerException {
+		IToken left = t;
 
 		if (!isKind(BANG, MINUS, RES_width, RES_height)) {
-			IToken a = null;
+			IToken op = t;
 			Expr b = uExpr();
-			return new UnaryExpr(t, a, b);
+			return new UnaryExpr(left, op, b);
 		}
 
 		return poFixExpr();
 	}
 
-	PostfixExpr poFixExpr() throws PLCCompilerException {
-		Expr a = null;
-		PixelSelector b = null;
-		ChannelSelector c = null;
-		return new PostfixExpr(t, a, b, c);
+	Expr poFixExpr() throws PLCCompilerException {
+		Expr a = priExpr();
+		IToken firstT = t;
+		PixelSelector b;
+		ChannelSelector c;
+		try {
+			b = pxSel();
+		}
+		catch (PLCCompilerException e) {
+			b = null;
+		}
+		try {
+			c = chSel();
+		}
+		catch (PLCCompilerException e) {
+			c = null;
+		}
+		if (b == null && c == null) {
+			return a;
+		}
+		return new PostfixExpr(firstT, a, b, c);
 	}
 
 	Expr priExpr() throws PLCCompilerException {
@@ -239,8 +243,12 @@ public class ExpressionParser implements IParser {
 				return new IdentExpr(t);
 			}
 			case LPAREN -> {
-				// get expr()
-				// close with RPAREN
+				Expr check = expr();
+				if (isKind(RPAREN)) {
+					return check;
+				} else {
+					throw new SyntaxException("Missing right paren");
+				}
 			}
 			case CONST -> {
 				return new ConstExpr(t);
@@ -249,10 +257,9 @@ public class ExpressionParser implements IParser {
 				return exPxExpr();
 			}
 			default -> {
-				throw new PLCCompilerException("Primary Expression Error");
+				throw new SyntaxException("Primary Expression Error");
 			}
 		}
-		throw new PLCCompilerException("something");
 	}
 
 	ChannelSelector chSel() throws PLCCompilerException {
@@ -260,6 +267,7 @@ public class ExpressionParser implements IParser {
 
 		if (isKind(COLON)) {
 			// next token -->
+//			t = tokenz.get(listPos);
 			if (isKind(RES_red, RES_green, RES_blue)) {
 				return new ChannelSelector(a,b);
 			}
@@ -269,13 +277,13 @@ public class ExpressionParser implements IParser {
 	}
 
 	PixelSelector pxSel() throws PLCCompilerException {
-
+		IToken first = t;
 		if (isKind(LSQUARE)) {
 			Expr a = expr();
 			if (isKind(COMMA)) {
 				Expr b = expr();
 				if (isKind(RSQUARE)) {
-					return new PixelSelector(t, a, b);
+					return new PixelSelector(first, a, b);
 				}
 			}
 		}
@@ -284,6 +292,7 @@ public class ExpressionParser implements IParser {
 	}
 
 	ExpandedPixelExpr exPxExpr() throws PLCCompilerException {
+		IToken first = t;
 		if (isKind(LSQUARE)) {
 			Expr a = expr();
 			if (isKind(COMMA)) {
@@ -291,7 +300,7 @@ public class ExpressionParser implements IParser {
 				if (isKind(COMMA)) {
 					Expr c = expr();
 					if (isKind(RSQUARE)) {
-						return new ExpandedPixelExpr(t, a, b, c);
+						return new ExpandedPixelExpr(first, a, b, c);
 					}
 				}
 			}
