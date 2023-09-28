@@ -75,7 +75,7 @@ public class ExpressionParser implements IParser {
 		// while theres tokens/not eof --> add tokens to array
 
 		//Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
-		Expr e = priExpr();
+		Expr e = poFixExpr();
 		return e;
 	}
 
@@ -98,18 +98,21 @@ public class ExpressionParser implements IParser {
 			throw new PLCCompilerException("Token not ?");
 		}
 		// next token
+		t = lexer.next();
 		Expr a = expr();
 
 		if (!isKind(RARROW)) {
 			throw new PLCCompilerException("Token not ->");
 		}
 
+		t = lexer.next();
 		Expr b = expr();
 
 		if (!isKind(COMMA)) {
 			throw new PLCCompilerException("Token not ,");
 		}
 
+		t = lexer.next();
 		Expr c = expr();
 
 		return new ConditionalExpr(first, a, b, c);
@@ -118,12 +121,14 @@ public class ExpressionParser implements IParser {
 	Expr logOrExpr() throws PLCCompilerException {
 		IToken first = t;
 		Expr left = logAndExpr();
+		t = lexer.next();
 
 		while (isKind(OR, BITOR)) {
 			// something --> op
 			IToken op = t;
 			Expr right = logAndExpr();
 			left = new BinaryExpr(first, left, op, right);
+			t = lexer.next();
 		}
 
 		return left;
@@ -132,12 +137,14 @@ public class ExpressionParser implements IParser {
 	Expr logAndExpr() throws PLCCompilerException {
 		IToken first = t;
 		Expr left = cmpExpr();
+		t = lexer.next();
 
 		while (isKind(AND, BITAND)) {
 			// something --> op
 			IToken op = t;
 			Expr right = cmpExpr();
 			left = new BinaryExpr(first, left, op, right);
+			t = lexer.next();
 		}
 
 		return left;
@@ -145,12 +152,14 @@ public class ExpressionParser implements IParser {
 
 	Expr cmpExpr() throws PLCCompilerException {
 		Expr left = powExpr();
+		t = lexer.next();
 
 		while (isKind(GT, LT, GE, LE, EQ)) {
 			// something --> op
 			IToken op = t;
 			Expr right = powExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
+			t = lexer.next();
 		}
 
 		return left;
@@ -158,12 +167,14 @@ public class ExpressionParser implements IParser {
 
 	Expr powExpr() throws PLCCompilerException {
 		Expr add = addExpr();
+		t = lexer.next();
 
 		if (isKind(EXP)) {
 			// save exp as op
 			IToken op = t;
 			Expr right = powExpr();
 			add = new BinaryExpr(op, add, op, right); // might be wrong
+			t = lexer.next();
 		}
 
 		return add;
@@ -171,12 +182,14 @@ public class ExpressionParser implements IParser {
 
 	Expr addExpr() throws PLCCompilerException {
 		Expr left = multExpr();
+		t = lexer.next();
 
 		while (isKind(PLUS, MINUS)) {
 			// something --> op
 			IToken op = t;
 			Expr right = multExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
+			t = lexer.next();
 		}
 
 		return left;
@@ -184,12 +197,14 @@ public class ExpressionParser implements IParser {
 
 	Expr multExpr() throws PLCCompilerException {
 		Expr left = uExpr();
+		t = lexer.next();
 
 		while (isKind(TIMES, DIV, MOD)) {
 			// save curr token as op to pass into Binary w/ right
 			IToken op = t; //token at curr position
 			Expr right = uExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
+			t = lexer.next();
 		}
 
 		return left;
@@ -198,10 +213,12 @@ public class ExpressionParser implements IParser {
 
 	Expr uExpr() throws PLCCompilerException {
 		IToken left = t;
+		t = lexer.next();
 
 		if (!isKind(BANG, MINUS, RES_width, RES_height)) {
 			IToken op = t;
 			Expr b = uExpr();
+			t = lexer.next();
 			return new UnaryExpr(left, op, b);
 		}
 
@@ -213,18 +230,24 @@ public class ExpressionParser implements IParser {
 		IToken firstT = t;
 		PixelSelector b;
 		ChannelSelector c;
+		t = lexer.next();
+
 		try {
 			b = pxSel();
+			t = lexer.next();
 		}
 		catch (PLCCompilerException e) {
 			b = null;
 		}
+
 		try {
 			c = chSel();
+			t = lexer.next();
 		}
 		catch (PLCCompilerException e) {
 			c = null;
 		}
+
 		if (b == null && c == null) {
 			return a;
 		}
@@ -266,13 +289,14 @@ public class ExpressionParser implements IParser {
 	}
 
 	ChannelSelector chSel() throws PLCCompilerException {
-		IToken a = null, b = null;
+		IToken first = t, color = null;
 
 		if (isKind(COLON)) {
-			// next token -->
-//			t = tokenz.get(listPos);
+			t = lexer.next();
 			if (isKind(RES_red, RES_green, RES_blue)) {
-				return new ChannelSelector(a,b);
+				color = t;
+				t = lexer.next();
+				return new ChannelSelector(first,color);
 			}
 		}
 
@@ -282,10 +306,13 @@ public class ExpressionParser implements IParser {
 	PixelSelector pxSel() throws PLCCompilerException {
 		IToken first = t;
 		if (isKind(LSQUARE)) {
+			t = lexer.next();
 			Expr a = expr();
 			if (isKind(COMMA)) {
+				t = lexer.next();
 				Expr b = expr();
 				if (isKind(RSQUARE)) {
+					t = lexer.next();
 					return new PixelSelector(first, a, b);
 				}
 			}
@@ -297,12 +324,16 @@ public class ExpressionParser implements IParser {
 	ExpandedPixelExpr exPxExpr() throws PLCCompilerException {
 		IToken first = t;
 		if (isKind(LSQUARE)) {
+			t = lexer.next();
 			Expr a = expr();
 			if (isKind(COMMA)) {
+				t = lexer.next();
 				Expr b = expr();
 				if (isKind(COMMA)) {
+					t = lexer.next();
 					Expr c = expr();
 					if (isKind(RSQUARE)) {
+						t = lexer.next();
 						return new ExpandedPixelExpr(first, a, b, c);
 					}
 				}
