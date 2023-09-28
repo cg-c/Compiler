@@ -239,6 +239,9 @@ public class ExpressionParser implements IParser {
 			case NUM_LIT -> {
 				return new NumLitExpr(t);
 			}
+			case BOOLEAN_LIT -> {
+				return new BooleanLitExpr(t);
+			}
 			case IDENT -> {
 				return new IdentExpr(t);
 			}
