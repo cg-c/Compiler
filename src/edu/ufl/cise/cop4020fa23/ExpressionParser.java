@@ -74,15 +74,15 @@ public class ExpressionParser implements IParser {
 		// throw error for empty string or smt
 		// while theres tokens/not eof --> add tokens to array
 
-		//Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
-		Expr e = poFixExpr();
+		Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
+		//Expr e = poFixExpr();
 		return e;
 	}
 
 	private Expr expr() throws PLCCompilerException {
 //		IToken firstT = t;
 
-		if (isKind(Kind.RES_if)) {
+		if (isKind(RES_if, QUESTION)) { // IT NEVER GOES HERE, SO I ADDED QUESTION
 			return condExpr();
 		}
 		else {
@@ -121,14 +121,14 @@ public class ExpressionParser implements IParser {
 	Expr logOrExpr() throws PLCCompilerException {
 		IToken first = t;
 		Expr left = logAndExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		while (isKind(OR, BITOR)) {
 			// something --> op
 			IToken op = t;
+			t = lexer.next();
 			Expr right = logAndExpr();
 			left = new BinaryExpr(first, left, op, right);
-			t = lexer.next();
 		}
 
 		return left;
@@ -137,14 +137,14 @@ public class ExpressionParser implements IParser {
 	Expr logAndExpr() throws PLCCompilerException {
 		IToken first = t;
 		Expr left = cmpExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		while (isKind(AND, BITAND)) {
 			// something --> op
 			IToken op = t;
+			t = lexer.next();
 			Expr right = cmpExpr();
 			left = new BinaryExpr(first, left, op, right);
-			t = lexer.next();
 		}
 
 		return left;
@@ -152,14 +152,14 @@ public class ExpressionParser implements IParser {
 
 	Expr cmpExpr() throws PLCCompilerException {
 		Expr left = powExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		while (isKind(GT, LT, GE, LE, EQ)) {
 			// something --> op
 			IToken op = t;
+			t = lexer.next();
 			Expr right = powExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
-			t = lexer.next();
 		}
 
 		return left;
@@ -167,14 +167,14 @@ public class ExpressionParser implements IParser {
 
 	Expr powExpr() throws PLCCompilerException {
 		Expr add = addExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		if (isKind(EXP)) {
 			// save exp as op
 			IToken op = t;
+			t = lexer.next();
 			Expr right = powExpr();
 			add = new BinaryExpr(op, add, op, right); // might be wrong
-			t = lexer.next();
 		}
 
 		return add;
@@ -182,14 +182,14 @@ public class ExpressionParser implements IParser {
 
 	Expr addExpr() throws PLCCompilerException {
 		Expr left = multExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		while (isKind(PLUS, MINUS)) {
 			// something --> op
 			IToken op = t;
+			t = lexer.next();
 			Expr right = multExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
-			t = lexer.next();
 		}
 
 		return left;
@@ -197,14 +197,14 @@ public class ExpressionParser implements IParser {
 
 	Expr multExpr() throws PLCCompilerException {
 		Expr left = uExpr();
-		t = lexer.next();
+//		t = lexer.next();
 
 		while (isKind(TIMES, DIV, MOD)) {
 			// save curr token as op to pass into Binary w/ right
 			IToken op = t; //token at curr position
+			t = lexer.next();
 			Expr right = uExpr();
 			left = new BinaryExpr(left.firstToken, left, op, right);
-			t = lexer.next();
 		}
 
 		return left;
@@ -213,12 +213,11 @@ public class ExpressionParser implements IParser {
 
 	Expr uExpr() throws PLCCompilerException {
 		IToken left = t;
-		t = lexer.next();
 
-		if (!isKind(BANG, MINUS, RES_width, RES_height)) {
+		if (isKind(BANG, MINUS, RES_width, RES_height)) {
 			IToken op = t;
-			Expr b = uExpr();
 			t = lexer.next();
+			Expr b = uExpr();
 			return new UnaryExpr(left, op, b);
 		}
 
@@ -269,6 +268,7 @@ public class ExpressionParser implements IParser {
 				return new IdentExpr(t);
 			}
 			case LPAREN -> {
+				t = lexer.next();
 				Expr check = expr();
 				if (isKind(RPAREN)) {
 					return check;
