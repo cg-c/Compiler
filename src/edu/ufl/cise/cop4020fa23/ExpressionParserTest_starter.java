@@ -1,28 +1,15 @@
 package edu.ufl.cise.cop4020fa23;
 
+import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
+import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
+import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
+import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.Test;
-
-import edu.ufl.cise.cop4020fa23.ast.AST;
-import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
-import edu.ufl.cise.cop4020fa23.ast.BooleanLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.ChannelSelector;
-import edu.ufl.cise.cop4020fa23.ast.ConditionalExpr;
-import edu.ufl.cise.cop4020fa23.ast.ConstExpr;
-import edu.ufl.cise.cop4020fa23.ast.Expr;
-import edu.ufl.cise.cop4020fa23.ast.IdentExpr;
-import edu.ufl.cise.cop4020fa23.ast.NumLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.PixelSelector;
-import edu.ufl.cise.cop4020fa23.ast.PostfixExpr;
-import edu.ufl.cise.cop4020fa23.ast.StringLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
-import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
-import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
-import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
 class ExpressionParserTest_starter {
 
@@ -459,28 +446,139 @@ class ExpressionParserTest_starter {
 			AST ast = getAST(input);
 		});
 	}
-
 	@Test
-	void test33() throws PLCCompilerException {
+	void unitTestLogicOrExpression() throws PLCCompilerException {
 		String input = """
-				3 4
-				""";
+         x || y
+         """;
 		AST ast = getAST(input);
-		Expr v0 = ((ConditionalExpr) ast).getGuardExpr();
-		checkNumLitExpr(v0, 3);
-		Expr v1 = ((ConditionalExpr) ast).getGuardExpr();
-		checkNumLitExpr(v1, 4);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.OR);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
 	}
 
+
 	@Test
-	void test34() throws PLCCompilerException {
+	void unitTestLogicBitOrExpression() throws PLCCompilerException {
 		String input = """
-				 d f
-				""";
+         x | y
+         """;
 		AST ast = getAST(input);
-		Expr v0 = ((ConditionalExpr) ast).getGuardExpr();
-		checkIdentExpr(v0, "d");
-		Expr v2 = ((ConditionalExpr) ast).getFalseExpr();
-		checkIdentExpr(v2, "f");
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.BITOR);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
 	}
+
+
+	@Test
+	void unitTestLogicAndExpression() throws PLCCompilerException {
+		String input = """
+         x && y
+         """;
+		AST ast = getAST(input);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.AND);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
+	}
+
+
+	@Test
+	void unitTestLogicBitAndExpression() throws PLCCompilerException {
+		String input = """
+         x & y
+         """;
+		AST ast = getAST(input);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.BITAND);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
+	}
+
+
+	@Test
+	void unitTestNestedAndOrExpression() throws PLCCompilerException {
+		String input = """
+         x || y && z
+         """;
+		AST ast = getAST(input);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.OR);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		BinaryExpr innerExpr = checkBinaryExpr(expr.getRightExpr(), Kind.AND);
+		checkIdentExpr(innerExpr.getLeftExpr(), "y");
+		checkIdentExpr(innerExpr.getRightExpr(), "z");
+	}
+
+
+	@Test
+	void unitTestLtExpression() throws PLCCompilerException {
+		String input = """
+         x < y
+         """;
+		AST ast = getAST(input);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.LT);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
+	}
+
+
+	@Test
+	void unitTestPowExpression() throws PLCCompilerException {
+		String input = """
+         x ** y
+         """;
+		AST ast = getAST(input);
+		BinaryExpr expr = checkBinaryExpr(ast, Kind.EXP);
+		checkIdentExpr(expr.getLeftExpr(), "x");
+		checkIdentExpr(expr.getRightExpr(), "y");
+	}
+
+
+	@Test
+	void unitTestWidthInUnaryExpression() throws PLCCompilerException {
+		String input = """
+         width 42
+         """;
+		AST ast = getAST(input);
+		UnaryExpr unaryWidth = checkUnaryExpr(ast, Kind.RES_width);
+		checkNumLitExpr(unaryWidth.getExpr(), 42);
+	}
+
+
+	@Test
+	void unitTestHeightInUnaryExpression() throws PLCCompilerException {
+		String input = """
+         height 42
+         """;
+		AST ast = getAST(input);
+		UnaryExpr unaryWidth = checkUnaryExpr(ast, Kind.RES_height);
+		checkNumLitExpr(unaryWidth.getExpr(), 42);
+	}
+
+
+	@Test
+	void unitTestNestedUnaryExpression() throws PLCCompilerException {
+		String input = """
+         width -42
+         """;
+		AST ast = getAST(input);
+		Expr unaryWidth = checkUnaryExpr(ast, Kind.RES_width).getExpr();
+		Expr unaryNegation = checkUnaryExpr(unaryWidth, Kind.MINUS).getExpr();
+		checkNumLitExpr(unaryNegation, 42);
+	}
+
+
+	@Test
+	void unitTestExpandedPixelExpression() throws PLCCompilerException {
+		String input = """
+         [1, 2, 3]
+         """;
+		AST ast = getAST(input);
+		assertThat("", ast, instanceOf(ExpandedPixelExpr.class));
+		Expr red = ((ExpandedPixelExpr) ast).getRed();
+		Expr green = ((ExpandedPixelExpr) ast).getGreen();
+		Expr blue = ((ExpandedPixelExpr) ast).getBlue();
+		checkNumLitExpr(red, 1);
+		checkNumLitExpr(green, 2);
+		checkNumLitExpr(blue, 3);
+	}
+
 }

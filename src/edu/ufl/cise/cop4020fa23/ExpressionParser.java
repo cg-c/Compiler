@@ -233,7 +233,7 @@ public class ExpressionParser implements IParser {
 
 		try {
 			b = pxSel();
-			t = lexer.next();
+			//t = lexer.next();
 		}
 		catch (PLCCompilerException e) {
 			b = null;
