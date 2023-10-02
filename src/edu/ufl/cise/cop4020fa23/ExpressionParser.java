@@ -95,21 +95,21 @@ public class ExpressionParser implements IParser {
 		IToken first = t; // or token b4 t??? I think its the one before t
 
 		if (!isKind(QUESTION)) {
-			throw new PLCCompilerException("Token not ?");
+			throw new SyntaxException("Token not ?");
 		}
 		// next token
 		t = lexer.next();
 		Expr a = expr();
 
 		if (!isKind(RARROW)) {
-			throw new PLCCompilerException("Token not ->");
+			throw new SyntaxException("Token not ->");
 		}
 
 		t = lexer.next();
 		Expr b = expr();
 
 		if (!isKind(COMMA)) {
-			throw new PLCCompilerException("Token not ,");
+			throw new SyntaxException("Token not ,");
 		}
 
 		t = lexer.next();
@@ -235,16 +235,22 @@ public class ExpressionParser implements IParser {
 			b = pxSel();
 			//t = lexer.next();
 		}
-		catch (PLCCompilerException e) {
+		catch (SyntaxException e) {
 			b = null;
+		}
+		catch (PLCCompilerException e) {
+			throw new SyntaxException("bad pixel syntax");
 		}
 
 		try {
 			c = chSel();
 			t = lexer.next();
 		}
-		catch (PLCCompilerException e) {
+		catch (SyntaxException e) {
 			c = null;
+		}
+		catch (PLCCompilerException e) {
+			throw new SyntaxException("no color");
 		}
 
 		if (b == null && c == null) {
@@ -298,9 +304,12 @@ public class ExpressionParser implements IParser {
 				t = lexer.next();
 				return new ChannelSelector(first,color);
 			}
+			else {
+				throw new PLCCompilerException("No color");
+			}
 		}
 
-		throw new PLCCompilerException("Not valid channel selector");
+		throw new SyntaxException("Not valid channel selector");
 	}
 
 	PixelSelector pxSel() throws PLCCompilerException {
@@ -315,10 +324,16 @@ public class ExpressionParser implements IParser {
 					t = lexer.next();
 					return new PixelSelector(first, a, b);
 				}
+				else {
+					throw new PLCCompilerException("no ]");
+				}
+			}
+			else {
+				throw new PLCCompilerException("no ,");
 			}
 		}
 
-		throw new PLCCompilerException("Not valid pixel selector");
+		throw new SyntaxException("Not valid pixel selector");
 	}
 
 	ExpandedPixelExpr exPxExpr() throws PLCCompilerException {
@@ -340,7 +355,7 @@ public class ExpressionParser implements IParser {
 			}
 		}
 
-		throw new PLCCompilerException("Not valid expanded pixel expr");
+		throw new SyntaxException("Not valid expanded pixel expr");
 	}
 
 
