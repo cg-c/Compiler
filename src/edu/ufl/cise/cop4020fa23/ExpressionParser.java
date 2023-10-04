@@ -9,24 +9,13 @@
  */
 package edu.ufl.cise.cop4020fa23;
 
+import java.lang.reflect.Type;
 import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import edu.ufl.cise.cop4020fa23.ast.AST;
-import edu.ufl.cise.cop4020fa23.ast.BinaryExpr;
-import edu.ufl.cise.cop4020fa23.ast.BooleanLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.ChannelSelector;
-import edu.ufl.cise.cop4020fa23.ast.ConditionalExpr;
-import edu.ufl.cise.cop4020fa23.ast.ConstExpr;
-import edu.ufl.cise.cop4020fa23.ast.ExpandedPixelExpr;
-import edu.ufl.cise.cop4020fa23.ast.Expr;
-import edu.ufl.cise.cop4020fa23.ast.IdentExpr;
-import edu.ufl.cise.cop4020fa23.ast.NumLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.PixelSelector;
-import edu.ufl.cise.cop4020fa23.ast.PostfixExpr;
-import edu.ufl.cise.cop4020fa23.ast.StringLitExpr;
-import edu.ufl.cise.cop4020fa23.ast.UnaryExpr;
+import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
@@ -71,6 +60,56 @@ public class ExpressionParser implements IParser {
 
 	@Override
 	public AST parse() throws PLCCompilerException {
+		AST e = program();
+		return e;
+	}
+
+	private AST program() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Block block() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private List<NameDef> paramList() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private List<NameDef> nameDef() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Type type() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Declaration declatration() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Dimension dimension() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private LValue lVal() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Statement statement() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private GuardedBlock gBlock() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+	private Block bStatement() throws PLCCompilerException {
+		throw new UnsupportedOperationException();
+	}
+
+
+	public AST exprParse() throws PLCCompilerException {
 		// throw error for empty string or smt
 		// while theres tokens/not eof --> add tokens to array
 
