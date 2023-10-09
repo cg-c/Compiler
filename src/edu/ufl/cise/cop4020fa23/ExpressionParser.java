@@ -73,283 +73,13 @@ public class ExpressionParser implements IParser {
 		t = cur;
 	}
 
+	
 
-	@Override
 	public AST parse() throws PLCCompilerException {
-		AST e = program();
-		return e;
-	}
-
-
-	private AST program() throws PLCCompilerException {
-		IToken first = t;
-		IToken type;
-		try {
-			type = type();
-		}
-		catch (PLCCompilerException e) {
-			throw new UnsupportedOperationException();
-		}
-
-		t = lexer.next();
-		//Expr a = expr();
-		if (!isKind(IDENT)) {
-			throw new SyntaxException("Token not ident");
-		}
-
-		t = lexer.next();
-		IToken name = t;
-		if (!isKind(LPAREN)) {
-			throw new SyntaxException("Token not lparen");
-		}
-
-		t= lexer.next();
-		List<NameDef> params;
-		try {
-			params = paramList();
-		}
-		catch (PLCCompilerException e) {
-			throw new UnsupportedOperationException();
-		}
-
-		t = lexer.next();
-		if (!isKind(RPAREN)) {
-			throw new SyntaxException("Token not rparen");
-		}
-
-		t = lexer.next();
-		Block block;
-		try {
-			block = block();
-		}
-		catch (PLCCompilerException e) {
-			throw new UnsupportedOperationException();
-		}
-
-		return new Program(first, type, name, params, block);
-	}
-
-
-	private Block block() throws PLCCompilerException {
-		if (isKind(BLOCK_OPEN)) {
-			t = lexer.next();
-			while(!isKind(BLOCK_CLOSE)) {
-				// either declaration or statement
-
-
-				if (!isKind(SEMI)) {
-					throw new SyntaxException("Token not semi");
-				}
-			}
-		}
-
-
-		throw new SyntaxException("Not valid block");
-	}
-
-
-	private List<NameDef> paramList() throws PLCCompilerException {
-
-		IToken first = t;
-		List<NameDef> nList = new ArrayList<>();
-
-		try {
-			NameDef n = nameDef();
-			nList.add(n);
-		}
-		catch (PLCCompilerException e) {
-			return null;
-		}
-
-		while (isKind(COMMA)) {
-//			t = lexer.next();
-			nList.add(nameDef());
-		}
-
-		return nList;
-	}
-
-
-	private NameDef nameDef() throws PLCCompilerException {
-
-		IToken first = t;
-		t = lexer.next();
-		IToken type = type();
-		Dimension d;
-
-
-		try {
-			d = dimension();
-		}
-		catch (SyntaxException e) {
-			d = null;
-		}
-
-		if (isKind(IDENT)) {
-			return new NameDef(first, type, d, t);
-		}
-
-		throw new SyntaxException("Not valid NameDef");
-	}
-
-	private IToken type() throws PLCCompilerException {
-
-		if (isKind(RES_image, RES_pixel, RES_int, RES_string, RES_void, RES_boolean)) {
-			return t;
-		}
-
-		throw new SyntaxException("Not valid type");
-	}
-
-	private Declaration declatration() throws PLCCompilerException {
-
-		IToken first = t;
-		NameDef n = nameDef();
-		Expr e = null;
-
-		if (isKind(ASSIGN)) {
-			t = lexer.next();
-			e = expr();
-		}
-
-		return new Declaration(t, n, e);
-	}
-
-	private Dimension dimension() throws PLCCompilerException {
-		IToken first = t;
-
-		if (isKind(LSQUARE)) {
-			t = lexer.next();
-			Expr left = expr();
-			if (isKind(COMMA)) {
-				t = lexer.next();
-				Expr right = expr();
-				if (isKind(RSQUARE)) {
-					return new Dimension(first, left, right);
-				}
-			}
-		}
-		throw new SyntaxException("Not valid dimension");
-	}
-
-	private LValue lVal() throws PLCCompilerException {
-		IToken first = t;
-
-		if (!isKind(IDENT)) {
-			throw new SyntaxException("Not valid LValue");
-		}
-
-		IToken ident = t;
-		PixelSelector ps = null;
-		ChannelSelector cs = null;
-		t = lexer.next();
-
-		try {
-			ps = pxSel();
-			//t = lexer.next();
-		}
-		catch (PLCCompilerException e) {
-			throw new SyntaxException("bad pixel syntax");
-		}
-
-		try {
-			cs = chSel();
-			t = lexer.next();
-		}
-		catch (PLCCompilerException e) {
-			throw new SyntaxException("no color");
-		}
-
-		return new LValue(first, ident, ps, cs);
-	}
-
-	private Statement statement() throws PLCCompilerException {
-
-		IToken first = t;
-
-		if (isKind(RES_write)) {
-			t = lexer.next();
-			Expr e = expr();
-			return new WriteStatement(first, e);
-		}
-		else if (isKind(RES_do)) {
-			t = lexer.next();
-			List<GuardedBlock> gList = new ArrayList<>();
-			// add first guard block
-			// keep adding guard blocks to list
-			return new DoStatement(t,gList);
-		}
-		else if (isKind(RES_if)) {
-			t = lexer.next();
-			List<GuardedBlock> gList = new ArrayList<>();
-			// add first guard block
-			// keep adding guard blocks to list
-			return new IfStatement(t, gList);
-		}
-		else if (isKind(RETURN)) {
-			t = lexer.next();
-			Expr e = expr();
-			return new ReturnStatement(first, e);
-		}
-		else if (isKind(IDENT)) {
-			LValue lv = lVal();
-
-			if (isKind(ASSIGN)) {
-				t = lexer.next();
-				Expr e = expr();
-			}
-		}
-		else if (isKind(BLOCK_OPEN)) {
-			Block b = bStatement();
-			return new StatementBlock(first, block());
-		}
-
-		throw new SyntaxException("Not valid statement");
-	}
-
-
-	private GuardedBlock gBlock() throws PLCCompilerException {
-		IToken first = t;
-		Expr guard = expr();
-
-		t = lexer.next();
-		if (!isKind(RARROW)) { // IT NEVER GOES HERE, SO I ADDED QUESTION
-			throw new SyntaxException("not ->");
-		}
-
-//		t = lexer.next();
-//		if (!isKind(RARROW)) { // IT NEVER GOES HERE, SO I ADDED QUESTION
-//			throw new SyntaxException("not ->");
-//		}
-
-		t = lexer.next();
-		Block block;
-		try {
-			block = block();
-		}
-		catch (PLCCompilerException e) {
-			throw new UnsupportedOperationException();
-		}
-
-		return new GuardedBlock(first, guard, block);
-	}
-
-
-	private Block bStatement() throws PLCCompilerException {
-		IToken first = t;
-
-		//	declare elems, while loop block() until cannot anymore
-		//return new Block(first, List< Block.BlockElem > elems);
-		throw new UnsupportedOperationException();
-	}
-
-	public AST exprParse() throws PLCCompilerException {
 		// throw error for empty string or smt
 		// while theres tokens/not eof --> add tokens to array
 
-
-		Expr e = expr(); // bc of this we have to change this, it only calls expr, nothing else
-		//Expr e = poFixExpr();
+		Expr e = expr();
 		return e;
 	}
 
@@ -365,7 +95,6 @@ public class ExpressionParser implements IParser {
 			return logOrExpr();
 		}
 	}
-
 
 	ConditionalExpr condExpr() throws PLCCompilerException {
 
@@ -404,7 +133,7 @@ public class ExpressionParser implements IParser {
 
 
 	Expr logOrExpr() throws PLCCompilerException {
-		IToken first =t;
+		IToken first = t;
 		Expr left = logAndExpr();
 //     t = lexer.next();
 
@@ -531,35 +260,24 @@ public class ExpressionParser implements IParser {
 
 
 	Expr poFixExpr() throws PLCCompilerException {
-		Expr a = priExpr();
 		IToken firstT = t;
-		PixelSelector b;
-		ChannelSelector c;
+		Expr a = priExpr();
+		PixelSelector b = null;
+		ChannelSelector c = null;
 		t = lexer.next();
 
 
-		try {
+		if (isKind(LSQUARE)) {
 			b = pxSel();
+		}
+
+
+		if (isKind(COLON)) {
+			c = chSel();
 			//t = lexer.next();
 		}
-		catch (SyntaxException e) {
-			b = null;
-		}
-		catch (PLCCompilerException e) {
-			throw new SyntaxException("bad pixel syntax");
-		}
 
 
-		try {
-			c = chSel();
-			t = lexer.next();
-		}
-		catch (SyntaxException e) {
-			c = null;
-		}
-		catch (PLCCompilerException e) {
-			throw new SyntaxException("no color");
-		}
 
 
 		if (b == null && c == null) {
@@ -616,9 +334,6 @@ public class ExpressionParser implements IParser {
 				t = lexer.next();
 				return new ChannelSelector(first,color);
 			}
-			else {
-				throw new PLCCompilerException("No color");
-			}
 		}
 
 
@@ -628,6 +343,8 @@ public class ExpressionParser implements IParser {
 
 	PixelSelector pxSel() throws PLCCompilerException {
 		IToken first = t;
+
+
 		if (isKind(LSQUARE)) {
 			t = lexer.next();
 			Expr a = expr();
@@ -638,12 +355,6 @@ public class ExpressionParser implements IParser {
 					t = lexer.next();
 					return new PixelSelector(first, a, b);
 				}
-				else {
-					throw new PLCCompilerException("no ]");
-				}
-			}
-			else {
-				throw new PLCCompilerException("no ,");
 			}
 		}
 
@@ -676,10 +387,6 @@ public class ExpressionParser implements IParser {
 	}
 
 
-
-
-
-
 	// FROM PowerPoint
 	private boolean isKind(Kind kind) {
 		return t.kind() == kind;
@@ -692,3 +399,4 @@ public class ExpressionParser implements IParser {
 		return false;
 	}
 }
+
