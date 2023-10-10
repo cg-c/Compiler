@@ -1,11 +1,11 @@
 /*Copyright 2023 by Beverly A Sanders
- * 
- * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the 
- * University of Florida during the fall semester 2023 as part of the course project.  
- * 
- * No other use is authorized. 
- * 
- * This code may not be posted on a public web site either during or after the course.  
+ *
+ * This code is provided for solely for use of students in COP4020 Programming Language Concepts at the
+ * University of Florida during the fall semester 2023 as part of the course project.
+ *
+ * No other use is authorized.
+ *
+ * This code may not be posted on a public web site either during or after the course.
  */
 /*Copyright 2023 by Beverly A Sanders
  *
@@ -73,7 +73,6 @@ public class ExpressionParser implements IParser {
 		t = cur;
 	}
 
-	
 
 	public AST parse() throws PLCCompilerException {
 		// throw error for empty string or smt
@@ -97,8 +96,6 @@ public class ExpressionParser implements IParser {
 	}
 
 	ConditionalExpr condExpr() throws PLCCompilerException {
-
-
 		IToken first = t; // or token b4 t??? I think its the one before t
 
 
