@@ -9,32 +9,18 @@
  */
 package edu.ufl.cise.cop4020fa23;
 
-
-
-
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
-
-
-
 import static edu.ufl.cise.cop4020fa23.Kind.*;
-
-
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-
-
 public class Parser implements IParser {
-
-
 	final ILexer lexer;
 	private IToken t;
 	private int listPos = 0;
