@@ -168,9 +168,8 @@ public class Parser implements IParser {
 			if (!isKind(RSQUARE)) {
 				throw new SyntaxException("Not valid NameDef");
 			}
+			t = lexer.next();
 		}
-
-		t = lexer.next();
 
 		if (isKind(IDENT)) {
 			return new NameDef(first, type, d, t);
@@ -321,7 +320,7 @@ public class Parser implements IParser {
 	private GuardedBlock gBlock() throws PLCCompilerException {
 		IToken first = t;
 		Expr guard = expr();
-		
+
 		if (!isKind(RARROW)) {
 			throw new SyntaxException("not ->");
 		}
