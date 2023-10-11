@@ -10,13 +10,19 @@
 package edu.ufl.cise.cop4020fa23;
 
 
+
+
 import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.exceptions.LexicalException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.SyntaxException;
 
 
+
+
 import static edu.ufl.cise.cop4020fa23.Kind.*;
+
+
 
 
 import java.util.ArrayList;
@@ -24,7 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 
 
+
+
 public class Parser implements IParser {
+
 
 	final ILexer lexer;
 	private IToken t;
@@ -34,13 +43,11 @@ public class Parser implements IParser {
 	 * @throws LexicalException
 	 */
 
-
 	public Parser(ILexer lexer) throws LexicalException {
 		super();
 		this.lexer = lexer;
 		t = lexer.next();
 	}
-
 
 	@Override
 	public AST parse() throws PLCCompilerException {
@@ -54,22 +61,18 @@ public class Parser implements IParser {
 		return e;
 	}
 
-
 	private AST program() throws PLCCompilerException {
 		IToken first = t;
 		IToken type;
 
-
 		type = type();
 		t = lexer.next();
-
 
 		if (!isKind(IDENT)) {
 			throw new SyntaxException("Token not ident");
 		}
 		IToken name = t;
 		t = lexer.next();
-
 
 		if (!isKind(LPAREN)) {
 			throw new SyntaxException("Token not lparen");
@@ -79,8 +82,6 @@ public class Parser implements IParser {
 		List<NameDef> params = new ArrayList<>();
 		if (!isKind(RPAREN)) {
 			params = paramList();
-
-			//t= lexer.next();
 
 			if (!isKind(RPAREN)) {
 				throw new SyntaxException("Token not rparen");
@@ -92,7 +93,6 @@ public class Parser implements IParser {
 		}
 
 		Block block = block();
-
 
 		return new Program(first, type, name, params, block);
 	}
@@ -134,9 +134,7 @@ public class Parser implements IParser {
 		return new Block(t, blockList);
 	}
 
-
 	private List<NameDef> paramList() throws PLCCompilerException {
-
 		IToken first = t;
 		List<NameDef> nList = new ArrayList<>();
 
@@ -172,16 +170,16 @@ public class Parser implements IParser {
 			}
 		}
 
+		t = lexer.next();
+
 		if (isKind(IDENT)) {
 			return new NameDef(first, type, d, t);
 		}
-
 
 		throw new SyntaxException("Not valid NameDef");
 	}
 
 	private IToken type() throws PLCCompilerException {
-
 
 		if (isKind(RES_image, RES_pixel, RES_int, RES_string, RES_void, RES_boolean)) {
 			return t;
@@ -189,7 +187,6 @@ public class Parser implements IParser {
 
 		throw new SyntaxException("Not valid type");
 	}
-
 
 	private Declaration declaration() throws PLCCompilerException {
 		IToken first = t;
@@ -295,7 +292,6 @@ public class Parser implements IParser {
 			if (isKind(RES_fi)) {
 				t = lexer.next();
 			}
-
 			return new IfStatement(t, gList);
 		}
 		else if (isKind(RETURN)) {
@@ -319,15 +315,13 @@ public class Parser implements IParser {
 			t = lexer.next();
 			return new StatementBlock(first, block());
 		}
-
 		throw new SyntaxException("Not valid statement");
 	}
-
 
 	private GuardedBlock gBlock() throws PLCCompilerException {
 		IToken first = t;
 		Expr guard = expr();
-
+		
 		if (!isKind(RARROW)) {
 			throw new SyntaxException("not ->");
 		}
@@ -342,21 +336,23 @@ public class Parser implements IParser {
 		return new GuardedBlock(first, guard, block);
 	}
 
+
 	private Block bStatement() throws PLCCompilerException {
 		IToken first = t;
 		return block();
 
-//		List<Block.BlockElem> elems = null;
-//		try {
-//			for (int i = 0; i < block().getElems().size(); i++) {
-//				elems.add(block().getElems().get(i));
-//			}
-//		}
-//		catch (PLCCompilerException e) {
-//			throw new SyntaxException("Guarded Block");
-//		}
-//		return new Block(first, elems);
+//     List<Block.BlockElem> elems = null;
+//     try {
+//        for (int i = 0; i < block().getElems().size(); i++) {
+//           elems.add(block().getElems().get(i));
+//        }
+//     }
+//     catch (PLCCompilerException e) {
+//        throw new SyntaxException("Guarded Block");
+//     }
+//     return new Block(first, elems);
 	}
+
 
 	public AST exprParse() throws PLCCompilerException {
 		Expr e = expr();
@@ -376,6 +372,7 @@ public class Parser implements IParser {
 
 	ConditionalExpr condExpr() throws PLCCompilerException {
 		IToken first = t; // or token b4 t??? I think its the one before t
+
 
 		if (!isKind(QUESTION)) {
 			throw new SyntaxException("Token not ?");
@@ -406,6 +403,7 @@ public class Parser implements IParser {
 		Expr left = logAndExpr();
 //     t = lexer.next();
 
+
 		while (isKind(OR, BITOR)) {
 			// something --> op
 			IToken op = t;
@@ -414,13 +412,16 @@ public class Parser implements IParser {
 			left = new BinaryExpr(first, left, op, right);
 		}
 
+
 		return left;
 	}
+
 
 	Expr logAndExpr() throws PLCCompilerException {
 		IToken first = t;
 		Expr left = cmpExpr();
 //     t = lexer.next();
+
 
 		while (isKind(AND, BITAND)) {
 			// something --> op
@@ -430,12 +431,15 @@ public class Parser implements IParser {
 			left = new BinaryExpr(first, left, op, right);
 		}
 
+
 		return left;
 	}
+
 
 	Expr cmpExpr() throws PLCCompilerException {
 		Expr left = powExpr();
 //     t = lexer.next();
+
 
 		while (isKind(GT, LT, GE, LE, EQ)) {
 			// something --> op
@@ -445,12 +449,15 @@ public class Parser implements IParser {
 			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
+
 		return left;
 	}
+
 
 	Expr powExpr() throws PLCCompilerException {
 		Expr add = addExpr();
 //     t = lexer.next();
+
 
 		if (isKind(EXP)) {
 			// save exp as op
@@ -460,12 +467,15 @@ public class Parser implements IParser {
 			add = new BinaryExpr(op, add, op, right); // might be wrong
 		}
 
+
 		return add;
 	}
+
 
 	Expr addExpr() throws PLCCompilerException {
 		Expr left = multExpr();
 //     t = lexer.next();
+
 
 		while (isKind(PLUS, MINUS)) {
 			// something --> op
@@ -475,12 +485,15 @@ public class Parser implements IParser {
 			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
+
 		return left;
 	}
+
 
 	Expr multExpr() throws PLCCompilerException {
 		Expr left = uExpr();
 //     t = lexer.next();
+
 
 		while (isKind(TIMES, DIV, MOD)) {
 			// save curr token as op to pass into Binary w/ right
@@ -490,12 +503,15 @@ public class Parser implements IParser {
 			left = new BinaryExpr(left.firstToken, left, op, right);
 		}
 
+
 		return left;
 		//return new BinaryExpr(first token, left, op, right);
 	}
 
+
 	Expr uExpr() throws PLCCompilerException {
 		IToken left = t;
+
 
 		if (isKind(BANG, MINUS, RES_width, RES_height)) {
 			IToken op = t;
@@ -504,8 +520,10 @@ public class Parser implements IParser {
 			return new UnaryExpr(left, op, b);
 		}
 
+
 		return poFixExpr();
 	}
+
 
 	Expr poFixExpr() throws PLCCompilerException {
 		IToken firstT = t;
@@ -514,20 +532,24 @@ public class Parser implements IParser {
 		ChannelSelector c = null;
 		t = lexer.next();
 
+
 		if (isKind(LSQUARE)) {
 			b = pxSel();
 		}
+
 
 		if (isKind(COLON)) {
 			c = chSel();
 			//t = lexer.next();
 		}
 
+
 		if (b == null && c == null) {
 			return a;
 		}
 		return new PostfixExpr(firstT, a, b, c);
 	}
+
 
 	Expr priExpr() throws PLCCompilerException {
 		switch (t.kind()) {
@@ -564,8 +586,10 @@ public class Parser implements IParser {
 		}
 	}
 
+
 	ChannelSelector chSel() throws PLCCompilerException {
 		IToken first = t, color = null;
+
 
 		if (isKind(COLON)) {
 			t = lexer.next();
@@ -576,11 +600,14 @@ public class Parser implements IParser {
 			}
 		}
 
+
 		throw new SyntaxException("Not valid channel selector");
 	}
 
+
 	PixelSelector pxSel() throws PLCCompilerException {
 		IToken first = t;
+
 
 		if (isKind(LSQUARE)) {
 			t = lexer.next();
@@ -595,8 +622,10 @@ public class Parser implements IParser {
 			}
 		}
 
+
 		throw new SyntaxException("Not valid pixel selector");
 	}
+
 
 	ExpandedPixelExpr exPxExpr() throws PLCCompilerException {
 		IToken first = t;
@@ -617,8 +646,10 @@ public class Parser implements IParser {
 			}
 		}
 
+
 		throw new SyntaxException("Not valid expanded pixel expr");
 	}
+
 
 	private boolean isKind(Kind kind) {
 		return t.kind() == kind;
@@ -631,4 +662,6 @@ public class Parser implements IParser {
 		return false;
 	}
 }
+
+
 
