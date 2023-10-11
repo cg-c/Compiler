@@ -45,6 +45,12 @@ public class Parser implements IParser {
 	@Override
 	public AST parse() throws PLCCompilerException {
 		AST e = program();
+
+		t = lexer.next();
+		if (!isKind(EOF)) {
+			throw new SyntaxException("Not end of");
+		}
+
 		return e;
 	}
 
@@ -79,6 +85,7 @@ public class Parser implements IParser {
 			if (!isKind(RPAREN)) {
 				throw new SyntaxException("Token not rparen");
 			}
+			t= lexer.next();
 		}
 		else {
 			t = lexer.next();
@@ -95,21 +102,17 @@ public class Parser implements IParser {
 		IToken first = t;
 		List<Block.BlockElem> blockList = new ArrayList<>();
 		Block.BlockElem b = null;
-		
+
 		if (isKind(BLOCK_OPEN)) {
 			t = lexer.next();
 			while(!isKind(BLOCK_CLOSE)) {
 				// either declaration or statement
 				if (isKind(RES_image,RES_pixel,RES_int,RES_string,RES_void,RES_boolean)) {
 					b = declaration();
-					t = lexer.next();
 
 					if (isKind(SEMI)) {
 						blockList.add(b);
 						t = lexer.next();
-					}
-					else if (isKind(BLOCK_CLOSE)) {
-						blockList.add(b);
 					}
 					else {
 						throw new SyntaxException("Not valid block");
@@ -117,13 +120,10 @@ public class Parser implements IParser {
 				}
 				else {
 					b = statement();
-//					t = lexer.next();
+
 					if (isKind(SEMI)) {
 						blockList.add(b);
 						t = lexer.next();
-					}
-					else if (isKind(BLOCK_CLOSE)) {
-						blockList.add(b);
 					}
 					else {
 						throw new SyntaxException("Not valid block");
@@ -137,7 +137,6 @@ public class Parser implements IParser {
 
 	private List<NameDef> paramList() throws PLCCompilerException {
 
-
 		IToken first = t;
 		List<NameDef> nList = new ArrayList<>();
 
@@ -148,19 +147,18 @@ public class Parser implements IParser {
 		else {
 			return null;
 		}
-
+		t = lexer.next();
 
 		while (isKind(COMMA)) {
 			t = lexer.next();
 			nList.add(nameDef());
+			t = lexer.next();
 		}
+
 		return nList;
 	}
 
-
 	private NameDef nameDef() throws PLCCompilerException {
-
-
 		IToken first = t;
 
 		IToken type = type();
@@ -169,7 +167,6 @@ public class Parser implements IParser {
 
 		if (isKind(LSQUARE)) {
 			d = dimension();
-			t = lexer.next(); //THIS GOES SOMEWHERE IDK
 			if (!isKind(RSQUARE)) {
 				throw new SyntaxException("Not valid NameDef");
 			}
@@ -183,7 +180,6 @@ public class Parser implements IParser {
 		throw new SyntaxException("Not valid NameDef");
 	}
 
-
 	private IToken type() throws PLCCompilerException {
 
 
@@ -191,18 +187,16 @@ public class Parser implements IParser {
 			return t;
 		}
 
-
 		throw new SyntaxException("Not valid type");
 	}
 
 
 	private Declaration declaration() throws PLCCompilerException {
-
-
 		IToken first = t;
 		NameDef n = nameDef();
 		Expr e = null;
 
+		t = lexer.next();
 
 		if (isKind(ASSIGN)) {
 			t = lexer.next();
@@ -211,10 +205,8 @@ public class Parser implements IParser {
 		return new Declaration(t, n, e);
 	}
 
-
 	private Dimension dimension() throws PLCCompilerException {
 		IToken first = t;
-
 
 		if (isKind(LSQUARE)) {
 			t = lexer.next();
@@ -229,7 +221,6 @@ public class Parser implements IParser {
 		}
 		throw new SyntaxException("Not valid dimension");
 	}
-
 
 	private LValue lVal() throws PLCCompilerException {
 		IToken first = t;
@@ -254,10 +245,8 @@ public class Parser implements IParser {
 		return new LValue(first, ident, ps, cs);
 	}
 
-
 	private Statement statement() throws PLCCompilerException {
 		IToken first = t;
-
 
 		if (isKind(RES_write)) {
 			t = lexer.next();
@@ -270,14 +259,19 @@ public class Parser implements IParser {
 
 			gList.add(gBlock());
 
-
+			t = lexer.next();
 			if (!isKind(BOX)) {
 				throw new SyntaxException("Not Box");
 			}
 
+			t = lexer.next();
+
 			while (!isKind(RES_od)) {
 				gList.add(gBlock());
-				gList.add(gBlock());
+				t = lexer.next();
+			}
+			if (isKind(RES_od)) {
+				t = lexer.next();
 			}
 
 			return new DoStatement(t,gList);
@@ -287,14 +281,21 @@ public class Parser implements IParser {
 			List<GuardedBlock> gList = new ArrayList<>();
 			gList.add(gBlock());
 
-
+			t = lexer.next();
 			if (!isKind(BOX)) {
 				throw new SyntaxException("Not Box");
 			}
 
-			while (!isKind(RES_if)) {
+			t = lexer.next();
+
+			while (!isKind(RES_fi)) {
 				gList.add(gBlock());
+				t = lexer.next();
 			}
+			if (isKind(RES_fi)) {
+				t = lexer.next();
+			}
+
 			return new IfStatement(t, gList);
 		}
 		else if (isKind(RETURN)) {
@@ -315,9 +316,9 @@ public class Parser implements IParser {
 		}
 		else if (isKind(BLOCK_OPEN)) {
 			Block b = bStatement();
+			t = lexer.next();
 			return new StatementBlock(first, block());
 		}
-
 
 		throw new SyntaxException("Not valid statement");
 	}
@@ -327,38 +328,34 @@ public class Parser implements IParser {
 		IToken first = t;
 		Expr guard = expr();
 
-		t = lexer.next();
 		if (!isKind(RARROW)) {
 			throw new SyntaxException("not ->");
 		}
 
-
 		t = lexer.next();
-		Block block;
-		try {
-			block = block();
-		}
-		catch (PLCCompilerException e) {
+
+		if (!isKind(BLOCK_OPEN)) {
 			throw new SyntaxException("Guarded Block");
 		}
+		Block block = block();
 
 		return new GuardedBlock(first, guard, block);
 	}
 
 	private Block bStatement() throws PLCCompilerException {
 		IToken first = t;
-		//return block();
+		return block();
 
-		List<Block.BlockElem> elems = null;
-		try {
-			for (int i = 0; i < block().getElems().size(); i++) {
-				elems.add(block().getElems().get(i));
-			}
-		}
-		catch (PLCCompilerException e) {
-			throw new SyntaxException("Guarded Block");
-		}
-		return new Block(first, elems);
+//		List<Block.BlockElem> elems = null;
+//		try {
+//			for (int i = 0; i < block().getElems().size(); i++) {
+//				elems.add(block().getElems().get(i));
+//			}
+//		}
+//		catch (PLCCompilerException e) {
+//			throw new SyntaxException("Guarded Block");
+//		}
+//		return new Block(first, elems);
 	}
 
 	public AST exprParse() throws PLCCompilerException {
