@@ -298,7 +298,7 @@ public class Parser implements IParser {
 		else if (isKind(BLOCK_OPEN)) {
 			Block b = bStatement();
 			t = lexer.next();
-			return new StatementBlock(first, block());
+			return new StatementBlock(first, b);
 		}
 		throw new SyntaxException("Not valid statement");
 	}
