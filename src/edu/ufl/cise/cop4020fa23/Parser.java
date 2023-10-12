@@ -242,20 +242,18 @@ public class Parser implements IParser {
 			gList.add(gBlock());
 
 			t = lexer.next();
-			if (!isKind(BOX)) {
-				throw new SyntaxException("Not Box");
-			}
 
-			t = lexer.next();
-
-			while (!isKind(RES_od)) {
+			while (isKind(BOX)) {
+				t = lexer.next();
 				gList.add(gBlock());
 				t = lexer.next();
 			}
-			if (isKind(RES_od)) {
-				t = lexer.next();
+
+			if (!isKind(RES_od)) {
+				throw new SyntaxException("Not od");
 			}
 
+			t = lexer.next();
 			return new DoStatement(t,gList);
 		}
 		else if (isKind(RES_if)) {
@@ -264,19 +262,19 @@ public class Parser implements IParser {
 			gList.add(gBlock());
 
 			t = lexer.next();
-			if (!isKind(BOX)) {
+
+			while (isKind(BOX)) {
+				t = lexer.next();
+				gList.add(gBlock());
+				t = lexer.next();
+			}
+
+			if (!isKind(RES_fi)) {
 				throw new SyntaxException("Not Box");
 			}
 
 			t = lexer.next();
 
-			while (!isKind(RES_fi)) {
-				gList.add(gBlock());
-				t = lexer.next();
-			}
-			if (isKind(RES_fi)) {
-				t = lexer.next();
-			}
 			return new IfStatement(t, gList);
 		}
 		else if (isKind(RETURN)) {
