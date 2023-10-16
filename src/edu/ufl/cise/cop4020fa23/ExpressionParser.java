@@ -261,7 +261,10 @@ public class ExpressionParser implements IParser {
 		Expr a = priExpr();
 		PixelSelector b = null;
 		ChannelSelector c = null;
-		t = lexer.next();
+
+		if (!isKind(LSQUARE)) {
+			t = lexer.next();
+		}
 
 
 		if (isKind(LSQUARE)) {
@@ -274,12 +277,10 @@ public class ExpressionParser implements IParser {
 			//t = lexer.next();
 		}
 
-
-
-
 		if (b == null && c == null) {
 			return a;
 		}
+
 		return new PostfixExpr(firstT, a, b, c);
 	}
 
