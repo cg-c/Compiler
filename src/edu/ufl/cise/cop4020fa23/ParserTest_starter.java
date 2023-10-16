@@ -705,4 +705,292 @@ class ParserTest_starter {
 		});
 	}
 
+
+
+// Helper functions
+
+
+
+
+	static final boolean VERBOSE = true;
+
+
+	void show(Object obj) {
+		if (VERBOSE) {
+			System.out.println(obj);
+		}
+	}
+
+
+
+
+	void checkIdentToken(IToken ident, String name) {
+		assertEquals(ident.kind(), Kind.IDENT);
+		assertEquals(ident.text(), name);
+	}
+
+
+// Start of tests
+
+
+
+
+	@Test
+	void unitTestBadDeclaration() throws PLCCompilerException {
+		String input = """
+         void p() <:
+         2_c=2;
+         :>
+         """;
+		SyntaxException e = assertThrows(SyntaxException.class, () -> {
+			getAST(input);
+		});
+		show("Error message from unitTestBadDeclaration: " + e.getMessage());
+	}
+
+
+	@Test
+	void testMultiDoState() throws PLCCompilerException {
+		String input = """
+         void p()<:
+            do z -> <:
+                int x;
+            :>
+            [] y -> <:
+                int x;
+            :>
+            od;
+         :>
+         """;
+		AST ast = getAST(input);
+		assertThat("", ast, instanceOf(Program.class));
+		Program v0 = (Program) ast;
+		IToken v1 = v0.getNameToken();
+		checkIdentToken(v1, "p");
+		List<NameDef> v2 = v0.getParams();
+		int v3 = v2.size();
+		assertEquals(0, v3);
+		Block v4 = v0.getBlock();
+		assertThat("", v4, instanceOf(Block.class));
+		List<BlockElem> v5 = v4.getElems();
+		int v6 = v5.size();
+		assertEquals(1, v6);
+
+
+		BlockElem v7 = v5.get(0);
+		assertThat("", v7, instanceOf(DoStatement.class));
+		List<GuardedBlock> v8 = ((DoStatement) v7).getGuardedBlocks();
+		assertEquals(v8.size(), 2);
+		GuardedBlock v9 = v8.get(0);
+		checkIdentExpr(v9.getGuard(), "z");
+		Block v10 = v9.getBlock();
+		assertThat("", v10, instanceOf(Block.class));
+		List<BlockElem> v11 = v10.getElems();
+		int v12 = v11.size();
+		assertEquals(1, v12);
+		Declaration v13 = checkDec(v11.get(0));
+		checkNameDef(v13.getNameDef(), "int", "x");
+		assertNull(v13.getInitializer());
+
+
+		GuardedBlock v14 = v8.get(1);
+		checkIdentExpr(v14.getGuard(), "y");
+		Block v15 = v14.getBlock();
+		assertThat("", v15, instanceOf(Block.class));
+		List<BlockElem> v16 = v15.getElems();
+		int v17 = v16.size();
+		assertEquals(1, v17);
+		Declaration v18 = checkDec(v16.get(0));
+		checkNameDef(v18.getNameDef(), "int", "x");
+		assertNull(v18.getInitializer());
+	}
+
+
+	@Test
+	void testMultiIfState() throws PLCCompilerException {
+		String input = """
+         void p()<:
+            if z -> <:
+                int x;
+            :>
+            [] y -> <:
+                int x;
+            :>
+            fi;
+          :>
+         """;
+		AST ast = getAST(input);
+		assertThat("", ast, instanceOf(Program.class));
+		Program v0 = (Program) ast;
+		IToken v1 = v0.getNameToken();
+		checkIdentToken(v1, "p");
+		List<NameDef> v2 = v0.getParams();
+		int v3 = v2.size();
+		assertEquals(0, v3);
+		Block v4 = v0.getBlock();
+		assertThat("", v4, instanceOf(Block.class));
+		List<BlockElem> v5 = v4.getElems();
+		int v6 = v5.size();
+		assertEquals(1, v6);
+
+
+		BlockElem v7 = v5.get(0);
+		assertThat("", v7, instanceOf(IfStatement.class));
+		List<GuardedBlock> v8 = ((IfStatement) v7).getGuardedBlocks();
+		assertEquals(v8.size(), 2);
+		GuardedBlock v9 = v8.get(0);
+		checkIdentExpr(v9.getGuard(), "z");
+		Block v10 = v9.getBlock();
+		assertThat("", v10, instanceOf(Block.class));
+		List<BlockElem> v11 = v10.getElems();
+		int v12 = v11.size();
+		assertEquals(1, v12);
+		Declaration v13 = checkDec(v11.get(0));
+		checkNameDef(v13.getNameDef(), "int", "x");
+		assertNull(v13.getInitializer());
+
+
+		GuardedBlock v14 = v8.get(1);
+		checkIdentExpr(v14.getGuard(), "y");
+		Block v15 = v14.getBlock();
+		assertThat("", v15, instanceOf(Block.class));
+		List<BlockElem> v16 = v15.getElems();
+		int v17 = v16.size();
+		assertEquals(1, v17);
+		Declaration v18 = checkDec(v16.get(0));
+		checkNameDef(v18.getNameDef(), "int", "x");
+		assertNull(v18.getInitializer());
+	}
+
+
+	@Test
+	void testInvalidSingleIfState() throws PLCCompilerException {
+		String input = """
+         void p()<:
+            if z -> <:
+                int x;
+            :>
+            []
+            fi;
+          :>
+         """;
+		SyntaxException e = assertThrows(SyntaxException.class, () -> getAST(input));
+		show("Error message from testInvalidSingleIfState: " + e.getMessage());
+	}
+
+
+	@Test
+	void testInvalidMultiIfState() throws PLCCompilerException {
+		String input = """
+         void p()<:
+            if z -> <:
+                int x;
+            :>
+            y -> <:
+                int x;
+            :>
+            fi;
+          :>
+         """;
+		SyntaxException e = assertThrows(SyntaxException.class, () -> getAST(input));
+		show("Error message from testInvalidMultiIfState: " + e.getMessage());
+	}
+
+	@Test
+	void testWriteExpr() throws PLCCompilerException {
+		String input = """
+         void p() <:
+            write 8987;
+            :>
+         """;
+		AST ast = getAST(input);
+		Program program0 = checkProgram(ast, "void", "p");
+		List<NameDef> params1 = program0.getParams();
+		assertEquals(0, params1.size());
+		Block programBlock2 = ((Program) ast).getBlock();
+		List<BlockElem> blockElemList3 = programBlock2.getElems();
+		assertEquals(1, blockElemList3.size());
+		BlockElem blockElem4 = ((List<BlockElem>) blockElemList3).get(0);
+		assertThat("", blockElem4, instanceOf(WriteStatement.class));
+		Expr returnValueExpr5 = ((WriteStatement) blockElem4).getExpr();
+		checkNumLitExpr(returnValueExpr5, 8987);
+	}
+
+	@Test
+	void test2a() throws PLCCompilerException {
+		String input = """
+         void p0(int [8, 9] a, string [ast, love] s, boolean b, image i, pixel p)<::>
+         """;
+		AST ast = getAST(input);
+		Program program0 = checkProgram(ast, "void", "p0");
+		List<NameDef> params1 = program0.getParams();
+		assertEquals(5, params1.size());
+		NameDef paramNameDef2 = ((List<NameDef>) params1).get(0);
+		checkNameDefDim(paramNameDef2, "int", "a");
+		NameDef paramNameDef3 = ((List<NameDef>) params1).get(1);
+		checkNameDefDim(paramNameDef3, "string", "s");
+		NameDef paramNameDef4 = ((List<NameDef>) params1).get(2);
+		checkNameDef(paramNameDef4, "boolean", "b");
+		NameDef paramNameDef5 = ((List<NameDef>) params1).get(3);
+		checkNameDef(paramNameDef5, "image", "i");
+		NameDef paramNameDef6 = ((List<NameDef>) params1).get(4);
+		checkNameDef(paramNameDef6, "pixel", "p");
+		Block programBlock7 = ((Program) ast).getBlock();
+		List<BlockElem> blockElemList8 = programBlock7.getElems();
+		assertEquals(0, blockElemList8.size());
+	}
+
+	@Test
+	void test3a() throws PLCCompilerException {
+		String input = """
+         boolean p0() <:
+         int a;
+         string s = "hello world";
+         boolean b;
+         image i;
+         pixel p;
+         image[1028,256] d;
+         :>
+         """;
+		AST ast = getAST(input);
+		Program program0 = checkProgram(ast, "boolean", "p0");
+		List<NameDef> params1 = program0.getParams();
+		assertEquals(0, params1.size());
+		Block programBlock2 = ((Program) ast).getBlock();
+		List<BlockElem> blockElemList3 = programBlock2.getElems();
+		assertEquals(6, blockElemList3.size());
+		BlockElem blockElem4 = ((List<BlockElem>) blockElemList3).get(0);
+		checkDec(blockElem4);
+		NameDef nameDef5 = ((Declaration) blockElem4).getNameDef();
+		checkNameDef(nameDef5, "int", "a");
+		BlockElem blockElem6 = ((List<BlockElem>) blockElemList3).get(1);
+		checkDec(blockElem6);
+		NameDef nameDef7 = ((Declaration) blockElem6).getNameDef();
+		checkNameDef(nameDef7, "string", "s");
+		BlockElem blockElem8 = ((List<BlockElem>) blockElemList3).get(2);
+		checkDec(blockElem8);
+		NameDef nameDef9 = ((Declaration) blockElem8).getNameDef();
+		checkNameDef(nameDef9, "boolean", "b");
+		BlockElem blockElem10 = ((List<BlockElem>) blockElemList3).get(3);
+		checkDec(blockElem10);
+		NameDef nameDef11 = ((Declaration) blockElem10).getNameDef();
+		checkNameDef(nameDef11, "image", "i");
+		BlockElem blockElem12 = ((List<BlockElem>) blockElemList3).get(4);
+		checkDec(blockElem12);
+		NameDef nameDef13 = ((Declaration) blockElem12).getNameDef();
+		checkNameDef(nameDef13, "pixel", "p");
+		BlockElem blockElem14 = ((List<BlockElem>) blockElemList3).get(5);
+		checkDec(blockElem14);
+		NameDef nameDef15 = ((Declaration) blockElem14).getNameDef();
+		checkNameDefDim(nameDef15, "image", "d");
+		Dimension dimension16 = ((NameDef) nameDef15).getDimension();
+		assertThat("", dimension16, instanceOf(Dimension.class));
+		Expr width17 = ((Dimension) dimension16).getWidth();
+		checkNumLitExpr(width17, 1028);
+		Expr height18 = ((Dimension) dimension16).getHeight();
+		checkNumLitExpr(height18, 256);
+	}
+
+
+
 }
