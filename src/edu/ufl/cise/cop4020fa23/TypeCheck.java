@@ -9,6 +9,8 @@ import java.util.List;
 
 import static edu.ufl.cise.cop4020fa23.Kind.*;
 
+// test pool: https://docs.google.com/document/d/1eGeTAau1Dyy3GNaDFZcv3rEgesH9nf7E1XfNsHYZeZ8/edit
+
 public class TypeCheck implements ASTVisitor {
 
     // Symbol Table Stuff
@@ -25,7 +27,25 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        return null;
+        symblTbl.enterScope();
+
+        Boolean compatible = false;
+        Type exprType = assignmentStatement.getE().getType();
+        Type lValType = assignmentStatement.getlValue().getType();
+
+        if (exprType == lValType) {
+            compatible = true;
+        }
+        else if (lValType == Type.PIXEL && exprType == Type.INT) {
+            compatible = true;
+        }
+        else if (lValType == Type.IMAGE && (exprType == Type.PIXEL || exprType == Type.INT || exprType == Type.STRING)) {
+            compatible = true;
+        }
+
+        symblTbl.leaveScope();
+
+        return compatible;
     }
 
     @Override
@@ -115,7 +135,7 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        return null;
+        return channelSelector.color();
     }
 
     @Override
@@ -134,14 +154,14 @@ public class TypeCheck implements ASTVisitor {
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
         Object e = declaration.visit(this, arg);
-        Type exprType = (Type) e;
+        Type exprType = declaration.getInitializer().getType();
         Type tNameDef = declaration.getNameDef().getType();
 
         if ((e == null) || (exprType == tNameDef) || (exprType == Type.STRING && tNameDef == Type.IMAGE)) {
-            // type to tNameDef
+            declaration.getInitializer().setType(tNameDef);
         }
 
-        return null;
+        return declaration;
     }
 
     @Override
@@ -212,14 +232,40 @@ public class TypeCheck implements ASTVisitor {
         return null;
     }
 
-    @Override //S
+    @Override //S + C
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
         symblTbl.enterScope();
-        Type lVal = (Type) lValue.getType();
-        //
-        //if not assignment compatible(lVal, x) throw error
+        NameDef lValND = symblTbl.lookup(lValue.getName());
+        Type lValType = lValND.getType();
+        PixelSelector ps = lValue.getPixelSelector();
+        ChannelSelector cs = lValue.getChannelSelector();
+        Type inferLValType = null;
+
+        if (ps == null && cs == null) {
+            inferLValType = lValType;
+        }
+        else if (lValType == Type.IMAGE && ps != null && cs == null) {
+            inferLValType = Type.PIXEL;
+            // indicate context is an LValue
+        }
+        else if (lValType == Type.IMAGE && ps != null && cs != null) {
+            inferLValType = Type.INT;
+            // indicate context is an LValue
+        }
+        else if (lValType == Type.IMAGE && ps == null && cs == null) {
+            inferLValType = Type.IMAGE;
+        }
+        else if (lValType == Type.PIXEL && ps == null && cs != null) {
+            inferLValType = Type.INT;
+        }
+
+        if (inferLValType == null) {
+            throw new TypeCheckException("Null lValue type");
+        }
+
+        lValue.setType(inferLValType);
         symblTbl.leaveScope();
-        return null;
+        return lValue;
     }
 
     @Override //S
