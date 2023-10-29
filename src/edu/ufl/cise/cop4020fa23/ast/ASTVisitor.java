@@ -13,7 +13,6 @@ import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 
 public interface ASTVisitor {
 
-
 	/**
 	 * @param assignmentStatement
 	 * @param arg
@@ -89,6 +88,7 @@ public interface ASTVisitor {
 	 * @param arg
 	 * @return
 	 */
+
 	Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException;
 
 	/**

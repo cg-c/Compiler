@@ -57,6 +57,8 @@ import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 class TypeCheckTest_starter {
 	static final int TIMEOUT_MILLIS = 1000;
 
+
+
 	AST getDecoratedAST(String input) throws PLCCompilerException {
 		AST ast = ComponentFactory.makeParser(input).parse();
 		ASTVisitor typeChecker = ComponentFactory.makeTypeChecker();

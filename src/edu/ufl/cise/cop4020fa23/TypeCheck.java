@@ -15,7 +15,7 @@ public class TypeCheck implements ASTVisitor {
 
     // Symbol Table Stuff
     SymbolTable symblTbl = new SymbolTable();
-
+    Type programType = null;
     /* Scans, parses, and type checks input. Returns normally if no
     errors. */
     AST typeCheck (String input) throws PLCCompilerException {
@@ -24,6 +24,11 @@ public class TypeCheck implements ASTVisitor {
         ast.visit(typeChecker, null);
         return ast;
     }
+
+    /*@Override
+    public Object visitExpr(Expr expr, Object arg) throws PLCCompilerException {
+        return null;
+    }*/
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
@@ -126,7 +131,7 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        symblTbl.enterScope();
+        symblTbl.enterScope(); //was there a reason to add two
         symblTbl.enterScope();
         Type left = (Type) visitBlock(statementBlock.getBlock(), arg);
         symblTbl.leaveScope();
@@ -204,14 +209,14 @@ public class TypeCheck implements ASTVisitor {
         return expandedPixelExpr;
     }
 
-    @Override //S - needs visitExpr
+    @Override //S
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
         if (guardedBlock.getGuard().getType() != Type.BOOLEAN) {
             throw new PLCCompilerException("no boolean present in guarded block");
         }
-        //Type left = (Type) visitExpr(guardedBlock.getGuard(), arg);
-        Type right = (Type) visitBlock(guardedBlock.getBlock(), arg);
-        return null;
+        //Type exprType = (Type) visitExpr(guardedBlock.getGuard(), arg);
+        Type blockType = (Type) visitBlock(guardedBlock.getBlock(), arg);
+        return guardedBlock;
     }
 
     @Override //S
@@ -270,17 +275,14 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        Type temp;
-        if (nameDef.getDimension() != null) {
-            temp = Type.IMAGE;
-        } else {
-            EnumSet<Type> set = EnumSet.allOf(Type.class);
-            set.remove(Type.IMAGE);
-            //temp = Type.INT;
+        symblTbl.enterScope();
+        Dimension dimension = nameDef.getDimension();
+        if (dimension != null) {
+            nameDef.setType(Type.IMAGE);
         }
-        //this function is difficult to understand based on slides
-
-        return null;
+        symblTbl.insert(nameDef.getName(), nameDef);
+        symblTbl.leaveScope();
+        return nameDef;
     }
 
     @Override
@@ -289,8 +291,27 @@ public class TypeCheck implements ASTVisitor {
         return Type.INT;
     }
 
-    @Override
+    @Override //do today
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
+        Expr xExpr = pixelSelector.xExpr();
+        Expr yExpr = pixelSelector.yExpr();
+        if (true /*pixelselector parent is lvalue*/) {
+            if (!(xExpr.getClass() == IdentExpr.class || xExpr.getClass() == NumLitExpr.class)) {
+                throw new TypeCheckException("xExpr not identExpr or numLitExpr");
+            }
+            if (!(yExpr.getClass() == IdentExpr.class || yExpr.getClass() == NumLitExpr.class)) {
+                throw new TypeCheckException("yExpr not identExpr or numLitExpr");
+            }
+            if (xExpr.getClass() == IdentExpr.class && symblTbl.lookup(((IdentExpr) xExpr).getName()) == null) {
+
+            }
+        }
+        if (xExpr.getType() == Type.INT) {
+            throw new TypeCheckException(); //write string
+        }
+        if (yExpr.getType() == Type.INT) {
+            throw new TypeCheckException(); //write string
+        }
         return null;
     }
 
@@ -326,20 +347,28 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
+
+       // root = program;
+        Type type = Type.kind2type(program.getTypeToken().kind());
+        programType = type;
+        program.setType(type);
         symblTbl.enterScope();
-        //check children: NameDef and Block
-        Type left = (Type) visitNameDef(program.getParams().get(0), arg); //is this going to work or do I need to traverse every parameter using for loop?
-        Type right = (Type) visitBlock(program.getBlock(), arg);
+        List<NameDef> params = program.getParams();
+        for (NameDef param : params) {
+            param.visit(this, arg);
+        }
+        program.getBlock().visit(this, arg);
         symblTbl.leaveScope();
-        return null;
+        return type;
     }
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
         Type exprType = returnStatement.getE().getType();
-
-        //if (exprType != )
-        return null;
+        if (programType != exprType) {
+            throw new TypeCheckException("expression type not equal to program type");
+        }
+        return returnStatement;
     }
 
     @Override
