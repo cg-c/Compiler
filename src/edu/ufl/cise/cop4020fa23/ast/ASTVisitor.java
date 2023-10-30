@@ -130,6 +130,7 @@ public interface ASTVisitor {
 	 * @param pixelSelector
 	 * @param arg
 	 */
+	
 	Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException;
 
 	/**
