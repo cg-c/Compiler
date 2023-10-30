@@ -212,7 +212,9 @@ public class TypeCheck implements ASTVisitor {
     @Override // S
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         symblTbl.print();
+
         for (int i = 0; i < doStatement.getGuardedBlocks().size(); i++) {
+            doStatement.getGuardedBlocks().get(i).getGuard().visit(this, arg);
             doStatement.getGuardedBlocks().get(i).getBlock().visit(this, arg);
 //            Type goTo = (Type) visitBlock(doStatement.getGuardedBlocks().get(i).getBlock(), arg);
         }
