@@ -127,8 +127,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
-        System.out.println("Block");
-        symblTbl.print();
+        //System.out.println("Block");
+        //symblTbl.print();
         symblTbl.enterScope();
         List<Block.BlockElem> bEle = block.getElems();
 
@@ -142,8 +142,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        System.out.println("Block statement");
-        symblTbl.print();
+        //System.out.println("Block statement");
+        //symblTbl.print();
         symblTbl.enterScope(); //was there a reason to add two
         statementBlock.equals(statementBlock.getBlock().visit(this, arg)); //nl
         symblTbl.leaveScope();
@@ -152,15 +152,15 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        System.out.println("Channel selector");
-        symblTbl.print();
+        //System.out.println("Channel selector");
+        //symblTbl.print();
         return channelSelector.color();
     }
 
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Cond Expr");
-        symblTbl.print();
+        //System.out.println("Cond Expr");
+        //symblTbl.print();
         conditionalExpr.getGuardExpr().visit(this, arg);
         conditionalExpr.getTrueExpr().visit(this, arg);
         conditionalExpr.getFalseExpr().visit(this, arg);
@@ -177,8 +177,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
-        System.out.println("Declaration");
-        symblTbl.print();
+        //System.out.println("Declaration");
+        //symblTbl.print();
         if (declaration.getInitializer() == null) {
             declaration.getNameDef().visit(this, arg);
             Type tNameDef = declaration.getNameDef().getType();
@@ -201,8 +201,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
-        System.out.println("Dimension");
-        symblTbl.print();
+        //System.out.println("Dimension");
+        //symblTbl.print();
         dimension.getWidth().visit(this, arg);
         dimension.getHeight().visit(this, arg);
         Type tWidth = dimension.getWidth().getType();
@@ -219,8 +219,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override // S
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        System.out.println("Do statement");
-        symblTbl.print();
+        //System.out.println("Do statement");
+        //symblTbl.print();
 
         for (int i = 0; i < doStatement.getGuardedBlocks().size(); i++) {
             doStatement.getGuardedBlocks().get(i).getGuard().visit(this, arg);
@@ -232,8 +232,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Expanded pixel expr");
-        symblTbl.print();
+        //System.out.println("Expanded pixel expr");
+        //symblTbl.print();
 
         expandedPixelExpr.getRed().visit(this, arg);
         expandedPixelExpr.getGreen().visit(this, arg);
@@ -258,8 +258,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        System.out.println("Guarded block");
-        symblTbl.print();
+        //System.out.println("Guarded block");
+        //symblTbl.print();
         guardedBlock.getGuard().visit(this, arg);
         Type guardType = guardedBlock.getGuard().getType();
         if (guardType != Type.BOOLEAN) {
@@ -272,8 +272,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Ident expr");
-        symblTbl.print();
+        //System.out.println("Ident expr");
+        //symblTbl.print();
         System.out.println("Looking for: " + identExpr.getName());
         if (symblTbl.lookup(identExpr.getName()) == null) {
             throw new TypeCheckException("name not present in symbol table");
@@ -286,8 +286,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        System.out.println("If statement");
-        symblTbl.print();
+        //System.out.println("If statement");
+        //symblTbl.print();
         for (int i = 0; i < ifStatement.getGuardedBlocks().size(); i++) {
             ifStatement.getGuardedBlocks().get(i).getBlock().visit(this, arg);
 //            Type goTo = (Type) visitBlock(ifStatement.getGuardedBlocks().get(i).getBlock(), arg);
@@ -297,8 +297,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S + C
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
-        System.out.println("Lvalue");
-        symblTbl.print();
+        //System.out.println("Lvalue");
+        //symblTbl.print();
         NameDef lValND = symblTbl.lookup(lValue.getName());
         Type lValType = lValND.getType();
         lValue.setNameDef(lValND);
@@ -339,8 +339,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
-        System.out.println("Namedef");
-        symblTbl.print();
+        //System.out.println("Namedef");
+        //symblTbl.print();
         try {
             if (nameDef.getDimension() != null) {
                 nameDef.getDimension().visit(this, arg);
@@ -360,16 +360,16 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Numlit");
-        symblTbl.print();
+        //System.out.println("Numlit");
+        //symblTbl.print();
         numLitExpr.setType(Type.INT);
         return Type.INT;
     }
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        System.out.println("Pixel Selector");
-        symblTbl.print();
+        //System.out.println("Pixel Selector");
+        //symblTbl.print();
 
         Expr xExpr = pixelSelector.xExpr();
         Expr yExpr = pixelSelector.yExpr();
@@ -414,8 +414,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Postfix expr");
-        symblTbl.print();
+        //System.out.println("Postfix expr");
+        //symblTbl.print();
         Type inferPoFix = null;
 //        postfixExpr.pixel().visit(this, arg);
         PixelSelector psType = postfixExpr.pixel();
@@ -456,8 +456,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override //S
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
-        System.out.println("Visit program");
-        symblTbl.print();
+        //System.out.println("Visit program");
+        //symblTbl.print();
         Type type = Type.kind2type(program.getTypeToken().kind());
         programType = type;
         program.setType(type);
@@ -473,8 +473,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCCompilerException {
-        System.out.println("Return statement");
-        symblTbl.print();
+        //System.out.println("Return statement");
+        //symblTbl.print();
         returnStatement.getE().visit(this, arg);
         Type exprType = returnStatement.getE().getType();
         if (programType != exprType) {
@@ -491,8 +491,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Unary expr");
-        symblTbl.print();
+        //System.out.println("Unary expr");
+        //symblTbl.print();
         Type inferUnaryExpr = null;
         Kind opKind = unaryExpr.getOp();
         Type exprType = unaryExpr.getType();
@@ -538,7 +538,7 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        System.out.println("visitConstExpr");
+        //System.out.println("visitConstExpr");
         if (constExpr.getName().equals("Z")) {
             constExpr.setType(Type.INT);
             return constExpr;
@@ -547,6 +547,7 @@ public class TypeCheck implements ASTVisitor {
         constExpr.setType(Type.PIXEL);
         return constExpr;
     }
+
 
     //do we need a "visitExpr"? This seems useful for stuff like guardedBlock and returnStatement that go to broad expressions
 }
