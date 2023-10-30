@@ -341,10 +341,14 @@ public class TypeCheck implements ASTVisitor {
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCCompilerException {
         System.out.println("Namedef");
         symblTbl.print();
+        try {
+            if (nameDef.getDimension() != null) {
+                nameDef.getDimension().visit(this, arg);
+                nameDef.setType(Type.IMAGE);
+            }
+        }
+        catch (Exception e){
 
-        if (nameDef.getDimension() != null) {
-            nameDef.getDimension().visit(this, arg);
-            nameDef.setType(Type.IMAGE);
         }
         if (nameDef.getType() == Type.VOID) {
             throw new TypeCheckException("Void in parameter");
@@ -366,8 +370,7 @@ public class TypeCheck implements ASTVisitor {
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
         System.out.println("Pixel Selector");
         symblTbl.print();
-        pixelSelector.xExpr().visit(this, arg);
-        pixelSelector.yExpr().visit(this, arg);
+
         Expr xExpr = pixelSelector.xExpr();
         Expr yExpr = pixelSelector.yExpr();
         if (arg != null) {
@@ -398,6 +401,8 @@ public class TypeCheck implements ASTVisitor {
                 //symblTbl.leaveScope();
             }
         }
+        pixelSelector.xExpr().visit(this, arg);
+        pixelSelector.yExpr().visit(this, arg);
         if (xExpr.getType() != Type.INT) {
             throw new TypeCheckException("X expression type not int");
         }
