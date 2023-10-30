@@ -328,6 +328,9 @@ public class TypeCheck implements ASTVisitor {
             nameDef.getDimension().visit(this, arg);
             nameDef.setType(Type.IMAGE);
         }
+        if (nameDef.getType() == Type.VOID) {
+            throw new TypeCheckException("Void in parameter");
+        }
         symblTbl.insert(nameDef.getName(), nameDef);
         symblTbl.print();
         return nameDef;
@@ -342,12 +345,12 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        System.out.println("visit pixel selector");
+        //System.out.println("visit pixel selector");
         pixelSelector.xExpr().visit(this, arg);
         pixelSelector.yExpr().visit(this, arg);
         Expr xExpr = pixelSelector.xExpr();
         Expr yExpr = pixelSelector.yExpr();
-        if (arg.equals(true)) { //causing test 5 to fail
+        if (arg != null) {
             if (!(xExpr.getClass() == IdentExpr.class || xExpr.getClass() == NumLitExpr.class)) {
                 throw new TypeCheckException("xExpr not identExpr or numLitExpr");
             }
