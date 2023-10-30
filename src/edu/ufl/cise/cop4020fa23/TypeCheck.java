@@ -180,11 +180,15 @@ public class TypeCheck implements ASTVisitor {
         System.out.println("Declaration");
         symblTbl.print();
         if (declaration.getInitializer() == null) {
+            if (symblTbl.lookup(declaration.getNameDef().getName()) != null) {
+                throw new TypeCheckException("Already in there");
+            }
             declaration.getNameDef().visit(this, arg);
             Type tNameDef = declaration.getNameDef().getType();
             declaration.getNameDef().setType(tNameDef);
             return declaration;
         }
+
 
         declaration.getInitializer().visit(this, arg);
         Type exprType = declaration.getInitializer().getType();
@@ -353,6 +357,12 @@ public class TypeCheck implements ASTVisitor {
         if (nameDef.getType() == Type.VOID) {
             throw new TypeCheckException("Void in parameter");
         }
+//        if (symblTbl.lookup(nameDef.getName()) != null) {
+//            throw new TypeCheckException("Already in there");
+//        }
+//        if (symblTbl.insert(nameDef.getName(), nameDef) == false) {
+//            throw new TypeCheckException("Already in there");
+//        }
         symblTbl.insert(nameDef.getName(), nameDef);
         symblTbl.print();
         return nameDef;
