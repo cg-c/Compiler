@@ -387,15 +387,19 @@ public class TypeCheck implements ASTVisitor {
         PixelSelector psType = postfixExpr.pixel();
 //        postfixExpr.channel().visit(this, arg);
         ChannelSelector csType = postfixExpr.channel();
-        Type exprType = postfixExpr.getType();
+        postfixExpr.primary().visit(this, arg);
+        Type exprType = postfixExpr.primary().getType();
+
 
         if (psType == null && csType == null) {
             inferPoFix = exprType;
         }
         else if (exprType == Type.IMAGE && psType != null && csType == null) {
+            postfixExpr.pixel().visit(this, arg);
             inferPoFix = Type.PIXEL;
         }
         else if (exprType == Type.IMAGE && psType != null && csType != null) {
+            postfixExpr.pixel().visit(this, arg);
             inferPoFix = Type.INT;
         }
         else if (exprType == Type.IMAGE && psType == null && csType != null) {
@@ -409,6 +413,10 @@ public class TypeCheck implements ASTVisitor {
             throw new TypeCheckException("PostFix is NULL");
         }
         postfixExpr.setType(inferPoFix);
+//        if (postfixExpr.primary().getType() == null) {
+//           postfixExpr.primary().setType(inferPoFix);
+//        }
+//
         return postfixExpr;
     }
 
