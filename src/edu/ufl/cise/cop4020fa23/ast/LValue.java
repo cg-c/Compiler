@@ -72,6 +72,7 @@ public class LValue extends AST {
 	public Type getVarType() {
 		return nameDef.getType();
 	}
+	public void setVarType(Type type) { nameDef.setType(type);}
 	@Override
 	public String toString() {
 		return "LValue [nameToken=" + nameToken + ", pixelSelector=" + pixelSelector + ", channelSelector="

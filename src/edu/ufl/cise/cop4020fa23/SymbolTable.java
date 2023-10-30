@@ -47,4 +47,17 @@ public class SymbolTable {
 
         return global.get(name);
     }
+
+    public void print() {
+
+        for (int i = scopes.size() - 1; i > -1; i--) {
+            HashMap<String, NameDef> curr = scopes.get(i);
+            for (HashMap.Entry<String, NameDef> mpEL : curr.entrySet()) {
+
+                String key = mpEL.getKey();
+                NameDef value = mpEL.getValue();
+                System.out.println(key);
+            }
+        }
+    }
 }
