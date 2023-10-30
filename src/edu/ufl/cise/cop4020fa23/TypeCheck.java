@@ -32,8 +32,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        System.out.println("Assignment");
-        symblTbl.print();
+        //System.out.println("Assignment");
+        //symblTbl.print();
         symblTbl.enterScope();
 
         Boolean compatible = false;
@@ -60,8 +60,8 @@ public class TypeCheck implements ASTVisitor {
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCCompilerException {
-        System.out.println("Binary expr");
-        symblTbl.print();
+        //System.out.println("Binary expr");
+        //symblTbl.print();
         binaryExpr.getLeftExpr().visit(this, arg);
         binaryExpr.getRightExpr().visit(this, arg);
         Type left = binaryExpr.getLeftExpr().getType();
@@ -180,11 +180,15 @@ public class TypeCheck implements ASTVisitor {
         //System.out.println("Declaration");
         //symblTbl.print();
         if (declaration.getInitializer() == null) {
+            if (symblTbl.lookup(declaration.getNameDef().getName()) != null) {
+                throw new TypeCheckException("Already in there");
+            }
             declaration.getNameDef().visit(this, arg);
             Type tNameDef = declaration.getNameDef().getType();
             declaration.getNameDef().setType(tNameDef);
             return declaration;
         }
+
 
         declaration.getInitializer().visit(this, arg);
         Type exprType = declaration.getInitializer().getType();
@@ -274,7 +278,7 @@ public class TypeCheck implements ASTVisitor {
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCCompilerException {
         //System.out.println("Ident expr");
         //symblTbl.print();
-        System.out.println("Looking for: " + identExpr.getName());
+        //System.out.println("Looking for: " + identExpr.getName());
         if (symblTbl.lookup(identExpr.getName()) == null) {
             throw new TypeCheckException("name not present in symbol table");
         }
@@ -353,6 +357,12 @@ public class TypeCheck implements ASTVisitor {
         if (nameDef.getType() == Type.VOID) {
             throw new TypeCheckException("Void in parameter");
         }
+//        if (symblTbl.lookup(nameDef.getName()) != null) {
+//            throw new TypeCheckException("Already in there");
+//        }
+//        if (symblTbl.insert(nameDef.getName(), nameDef) == false) {
+//            throw new TypeCheckException("Already in there");
+//        }
         symblTbl.insert(nameDef.getName(), nameDef);
         symblTbl.print();
         return nameDef;
@@ -381,7 +391,7 @@ public class TypeCheck implements ASTVisitor {
                 throw new TypeCheckException("yExpr not identExpr or numLitExpr");
             }
             if (xExpr.getClass() == IdentExpr.class && symblTbl.lookup(((IdentExpr) xExpr).getName()) == null) {
-                System.out.println("X synthetic");
+                //System.out.println("X synthetic");
                 //symblTbl.enterScope();
                 String xName = ((IdentExpr) xExpr).getName();
                 SyntheticNameDef xNameDef = new SyntheticNameDef(xName);
@@ -392,7 +402,7 @@ public class TypeCheck implements ASTVisitor {
             }
             if (yExpr.getClass() == IdentExpr.class && symblTbl.lookup(((IdentExpr) yExpr).getName()) == null) {
                 //symblTbl.enterScope();
-                System.out.println("Y synthetic");
+                //System.out.println("Y synthetic");
                 String yName = ((IdentExpr) yExpr).getName();
                 SyntheticNameDef yNameDef = new SyntheticNameDef(yName);
                 yNameDef.setType(Type.INT);

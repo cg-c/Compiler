@@ -56,7 +56,7 @@ public class SymbolTable {
 
                 String key = mpEL.getKey();
                 NameDef value = mpEL.getValue();
-                System.out.println(key);
+                //System.out.println(key);
             }
         }
     }

@@ -1276,6 +1276,4 @@ class TypeCheckTest_starter {
 		show("Error message from unitTestVariableAlreadyInScope: " + e.getMessage());
 	}
 
-
-
 }
