@@ -383,10 +383,10 @@ public class TypeCheck implements ASTVisitor {
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
         Type inferPoFix = null;
-        postfixExpr.pixel().visit(this, arg);
-        Type psType = postfixExpr.pixel().xExpr().getType();
-        postfixExpr.channel().visit(this, arg);
-        Type csType = Type.kind2type(postfixExpr.channel().color()); //kind2type not correct, need to fix channel in gen
+//        postfixExpr.pixel().visit(this, arg);
+        PixelSelector psType = postfixExpr.pixel();
+//        postfixExpr.channel().visit(this, arg);
+        ChannelSelector csType = postfixExpr.channel();
         Type exprType = postfixExpr.getType();
 
         if (psType == null && csType == null) {
