@@ -296,11 +296,13 @@ public class TypeCheck implements ASTVisitor {
             inferLValType = lValType;
         }
         else if (lValType == Type.IMAGE && ps != null && cs == null) {
-            ps.visit(this, arg);
+            boolean lValB = true;
+            ps.visit(this, lValB);
             inferLValType = Type.PIXEL;
         }
         else if (lValType == Type.IMAGE && ps != null && cs != null) {
-            ps.visit(this, arg);
+            boolean lVal = true;
+            ps.visit(this, lVal);
             inferLValType = Type.INT;
         }
         else if (lValType == Type.IMAGE && ps == null && cs == null) {
@@ -345,7 +347,7 @@ public class TypeCheck implements ASTVisitor {
         pixelSelector.yExpr().visit(this, arg);
         Expr xExpr = pixelSelector.xExpr();
         Expr yExpr = pixelSelector.yExpr();
-        if (true /*pixelselector parent is lvalue*/) {
+        if (arg.equals(true)) { //causing test 5 to fail
             if (!(xExpr.getClass() == IdentExpr.class || xExpr.getClass() == NumLitExpr.class)) {
                 throw new TypeCheckException("xExpr not identExpr or numLitExpr");
             }
