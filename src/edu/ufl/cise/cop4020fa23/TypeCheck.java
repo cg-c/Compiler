@@ -198,7 +198,9 @@ public class TypeCheck implements ASTVisitor {
         if ((exprType == tNameDef) || (exprType == Type.STRING && tNameDef == Type.IMAGE)) {
             declaration.getNameDef().setType(tNameDef);
         }
-        // err
+        else {
+            throw new TypeCheckException("Not correct type");
+        }
 
         return declaration;
     }
@@ -283,7 +285,7 @@ public class TypeCheck implements ASTVisitor {
             throw new TypeCheckException("name not present in symbol table");
         }
         identExpr.setNameDef(symblTbl.lookup(identExpr.getName()));
-        identExpr.getNameDef().visit(this, arg);
+        //identExpr.getNameDef().visit(this, arg);
         identExpr.setType(identExpr.getNameDef().getType());
         return identExpr;
     }
@@ -293,6 +295,7 @@ public class TypeCheck implements ASTVisitor {
         //System.out.println("If statement");
         //symblTbl.print();
         for (int i = 0; i < ifStatement.getGuardedBlocks().size(); i++) {
+            ifStatement.getGuardedBlocks().get(i).getGuard().visit(this, arg);
             ifStatement.getGuardedBlocks().get(i).getBlock().visit(this, arg);
 //            Type goTo = (Type) visitBlock(ifStatement.getGuardedBlocks().get(i).getBlock(), arg);
         }
@@ -363,7 +366,9 @@ public class TypeCheck implements ASTVisitor {
 //        if (symblTbl.insert(nameDef.getName(), nameDef) == false) {
 //            throw new TypeCheckException("Already in there");
 //        }
-        symblTbl.insert(nameDef.getName(), nameDef);
+        if (symblTbl.insert(nameDef.getName(), nameDef) == false) {
+            throw new TypeCheckException("Already in there");
+        }
         symblTbl.print();
         return nameDef;
     }
@@ -505,7 +510,8 @@ public class TypeCheck implements ASTVisitor {
         //symblTbl.print();
         Type inferUnaryExpr = null;
         Kind opKind = unaryExpr.getOp();
-        Type exprType = unaryExpr.getType();
+        unaryExpr.getExpr().visit(this, arg);
+        Type exprType = unaryExpr.getExpr().getType();
 
         switch (opKind) {
             case BANG -> {
