@@ -181,7 +181,9 @@ public class TypeCheck implements ASTVisitor {
         //symblTbl.print();
         if (declaration.getInitializer() == null) {
             if (symblTbl.lookup(declaration.getNameDef().getName()) != null) {
-                throw new TypeCheckException("Already in there");
+                if (symblTbl.lookup(declaration.getNameDef().getName()).getType() == declaration.getNameDef().getType()) {
+                    throw new TypeCheckException("Already in there");
+                }
             }
             declaration.getNameDef().visit(this, arg);
             Type tNameDef = declaration.getNameDef().getType();
