@@ -60,4 +60,15 @@ public class SymbolTable {
             }
         }
     }
+
+    public int getScope(String name) {
+        for (int i = 0; i < scopes.size(); i++) {
+            HashMap<String, NameDef> scopeChecked;
+            scopeChecked = scopes.get(i);
+            if (scopeChecked.containsKey(name)) {
+                return (i+1);
+            }
+        }
+        return -1;
+    }
 }
