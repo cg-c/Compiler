@@ -159,7 +159,7 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-        temp.append(assignmentStatement.getlValue().toString());
+        temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
         temp.append("=");
         temp.append(assignmentStatement.getE().visit(this, arg).toString());
 
@@ -208,11 +208,11 @@ public class CodeGen implements ASTVisitor {
 
 
         temp.append("(");
-        temp.append((conditionalExpr.getGuardExpr()).toString()); //do we need to visit first
+        temp.append((conditionalExpr.getGuardExpr().visit(this, arg)).toString()); //do we need to visit first
         temp.append("?");
-        temp.append((conditionalExpr.getTrueExpr()).toString());
+        temp.append((conditionalExpr.getTrueExpr().visit(this, arg)).toString());
         temp.append(":");
-        temp.append((conditionalExpr.getGuardExpr()).toString());
+        temp.append((conditionalExpr.getFalseExpr().visit(this, arg)).toString());
         temp.append(")");
 
 
@@ -223,16 +223,17 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCCompilerException {
 
-
         Expr expr = declaration.getInitializer();
         StringBuilder temp = new StringBuilder();
+        String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
+
         if (expr != null) {
-            temp.append(declaration.getNameDef().toString());
+            temp.append(nameDef$);
             temp.append("=");
-            temp.append(expr.toString());
+            temp.append(expr.visit(this, arg).toString());
         }
         else {
-            temp.append(declaration.getNameDef().toString());
+            temp.append(nameDef$);
         }
 
 
