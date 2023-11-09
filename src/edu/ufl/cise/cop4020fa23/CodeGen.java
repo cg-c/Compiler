@@ -93,9 +93,9 @@ public class CodeGen implements ASTVisitor {
 
         String ident = program.getName();
         Type t = program.getType();
+        symblTable.enterScope();
         result.append("package edu.ufl.cise.cop4020fa23;\n");
-        /*result.append("import edu.ufl.cise.cop4020fa23.ast.*;\n import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;");
-        result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");*/
+        result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         result.append("public class ");
         result.append(ident);
         result.append(" {\npublic static ");
@@ -113,13 +113,14 @@ public class CodeGen implements ASTVisitor {
         result.append(") ");
         result.append(program.getBlock().visit(this, arg).toString());
         result.append("}\n");
-
+        symblTable.leaveScope();
         return result.toString();
     }
 
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCCompilerException {
+        symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
         temp.append("{");
         for (int i = 0; i < block.getElems().size(); i++) {
@@ -128,6 +129,7 @@ public class CodeGen implements ASTVisitor {
             temp.append("\n");
         }
         temp.append("}");
+        symblTable.leaveScope();
         return temp.toString();
     }
 
@@ -139,6 +141,9 @@ public class CodeGen implements ASTVisitor {
         temp.append(" ");
 
         String name = nameDef.getName();
+        //make sure that if redefining in same space, error is thrown
+        //if
+
         symblTable.insert(name, nameDef);
         temp.append(name);
         temp.append("$");
@@ -150,20 +155,22 @@ public class CodeGen implements ASTVisitor {
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
+        symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
         temp.append(statementBlock.getBlock().visit(this, arg).toString());
+        symblTable.leaveScope();
         return temp.toString();
     }
 
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
+        symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
         temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
         temp.append("=");
         temp.append(assignmentStatement.getE().visit(this, arg).toString());
-
-
+        symblTable.leaveScope();
         return temp.toString();
     }
 

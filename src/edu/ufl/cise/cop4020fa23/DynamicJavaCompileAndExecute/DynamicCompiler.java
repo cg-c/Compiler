@@ -20,8 +20,21 @@ public class DynamicCompiler {
 		sourceFiles.add(new StringJavaFileObject(fullyQualifiedName, sourceCode));
 		
 		List<String> options = new ArrayList<>();
+
+		//uhhh, do we need a classpath
+
+		//options.add("-classpath");
+		//options.add(System.getProperty("user.dir") + "/out/production/PLC-Project");
+
+		/*
 		options.add("-classpath");
 		options.add("bin");
+		options.add("--release");
+		options.add("20");
+		options.add("--enable-preview");
+		*/
+
+		//options.add("bin");
 		
 		boolean success = compiler.getTask(null, fileManager, null, options, null, sourceFiles).call();
 		if (success) {
