@@ -7,6 +7,7 @@ import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -90,29 +91,36 @@ public class CodeGen implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCCompilerException {
-
+        StringBuilder temp = new StringBuilder();
         String ident = program.getName();
         Type t = program.getType();
         symblTable.enterScope();
         result.append("package edu.ufl.cise.cop4020fa23;\n");
-        result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
-        result.append("public class ");
-        result.append(ident);
-        result.append(" {\npublic static ");
-        result.append(convertType(t));
-        result.append(" apply(");
-
+        temp.append("public class ");temp.append(ident);
+        temp.append(" {\npublic static ");
+        temp.append(convertType(t));
+        temp.append(" apply(");
         for (int i = 0; i < program.getParams().size(); i++) {
-            result.append(program.getParams().get(i).visit(this, arg).toString());
+            temp.append(program.getParams().get(i).visit(this, arg).toString());
 
             if (i != program.getParams().size() - 1) {
-                result.append(",");
+                temp.append(",");
             }
         }
+        temp.append(") ");
+        temp.append(program.getBlock().visit(this, arg).toString());
+        temp.append("}\n");
+        //result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
 
-        result.append(") ");
-        result.append(program.getBlock().visit(this, arg).toString());
-        result.append("}\n");
+
+
+        for (String i : imports) {
+            result.append(i);
+        }
+        result.append(temp);
+
+
+
         symblTable.leaveScope();
         return result.toString();
     }
@@ -312,6 +320,8 @@ public class CodeGen implements ASTVisitor {
     public Object visitWriteStatement(WriteStatement writeStatement, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
         imports.add("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
+        //System.out.println("import added");
+        //result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         temp.append("ConsoleIO.write(");
         temp.append(writeStatement.getExpr().visit(this, arg).toString());
         temp.append(")");
