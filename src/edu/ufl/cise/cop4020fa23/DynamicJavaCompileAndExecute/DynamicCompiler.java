@@ -21,6 +21,9 @@ public class DynamicCompiler {
 		
 		List<String> options = new ArrayList<>();
 
+		//options.add("-classpath");
+		//options.add("bin");
+
 		//uhhh, do we need a classpath
 
 		//options.add("-classpath");

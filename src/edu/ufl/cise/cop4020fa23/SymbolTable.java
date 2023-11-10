@@ -8,10 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+
+
 public class SymbolTable {
 
 
     public HashMap<String, NameDef> global;
+    //public static int numScopesPopped = 0;
     public Stack<HashMap<String, NameDef>> scopes;
 
     // CONSTRUCTOR
@@ -23,10 +26,12 @@ public class SymbolTable {
 
     void enterScope() {
         scopes.push(new HashMap<>());
+
     }
 
     void leaveScope() {
         scopes.pop();
+
     }
 
     public boolean insert(String name, NameDef n) throws TypeCheckException {
@@ -62,7 +67,7 @@ public class SymbolTable {
     }
 
     public int getScope(String name) {
-        for (int i = 0; i < scopes.size(); i++) {
+        for (int i = scopes.size() - 1; i > - 1; i--) {
             HashMap<String, NameDef> scopeChecked;
             scopeChecked = scopes.get(i);
             if (scopeChecked.containsKey(name)) {

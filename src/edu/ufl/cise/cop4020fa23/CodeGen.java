@@ -6,6 +6,8 @@ import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 
+//import static edu.ufl.cise.cop4020fa23.SymbolTable.numScopesPopped;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -163,22 +165,22 @@ public class CodeGen implements ASTVisitor {
 
     @Override
     public Object visitBlockStatement(StatementBlock statementBlock, Object arg) throws PLCCompilerException {
-        symblTable.enterScope();
+        //symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
         temp.append(statementBlock.getBlock().visit(this, arg).toString());
-        symblTable.leaveScope();
+        //symblTable.leaveScope();
         return temp.toString();
     }
 
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        symblTable.enterScope();
+        //symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
         temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
         temp.append("=");
         temp.append(assignmentStatement.getE().visit(this, arg).toString());
-        symblTable.leaveScope();
+        //symblTable.leaveScope();
         return temp.toString();
     }
 
