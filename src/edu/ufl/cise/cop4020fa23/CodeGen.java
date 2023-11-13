@@ -87,6 +87,9 @@ public class CodeGen implements ASTVisitor {
             case TIMES -> {
                 return "*";
             }
+            case EQ -> {
+                return "==";
+            }
         }
         return "";
     }
@@ -285,6 +288,7 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
+        //System.out.println(temp);
         temp.append(numLitExpr.getText().toString());
         return temp.toString();
     }
@@ -332,10 +336,10 @@ public class CodeGen implements ASTVisitor {
     }
 
 
-    @Override //major uncertainty
+    @Override
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-        temp.append(getBool(booleanLitExpr.toString())); //v unsure about this
+        temp.append(getBool(booleanLitExpr.toString()));
         return temp.toString();
     }
 
