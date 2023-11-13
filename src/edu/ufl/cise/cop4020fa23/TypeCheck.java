@@ -278,7 +278,14 @@ public class TypeCheck implements ASTVisitor {
     @Override //S + C
     public Object visitLValue(LValue lValue, Object arg) throws PLCCompilerException {
         NameDef lValND = symblTbl.lookup(lValue.getName());
-        Type lValType = lValND.getType();
+        Type lValType;
+        try{
+            lValType = lValND.getType();
+        }
+        catch (Exception e) {
+            throw new PLCCompilerException("lVal null");
+        }
+
         lValue.setNameDef(lValND);
         lValue.setVarType(lValType);
         PixelSelector ps = lValue.getPixelSelector();
@@ -303,6 +310,9 @@ public class TypeCheck implements ASTVisitor {
         }
         else if (lValType == Type.PIXEL && ps == null && cs != null) {
             inferLValType = Type.INT;
+        }
+        else {
+            throw new TypeCheckException("lVal false");
         }
 
         if (inferLValType == null) {
