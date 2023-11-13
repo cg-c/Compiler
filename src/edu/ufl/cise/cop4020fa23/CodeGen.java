@@ -335,10 +335,16 @@ public class CodeGen implements ASTVisitor {
     @Override //major uncertainty
     public Object visitBooleanLitExpr(BooleanLitExpr booleanLitExpr, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-        temp.append(booleanLitExpr.toString()); //v unsure about this
+        temp.append(getBool(booleanLitExpr.toString())); //v unsure about this
         return temp.toString();
     }
 
+    private String getBool(String s) {
+        if (s.indexOf("TRUE") != -1) {
+            return "true";
+        }
+        return "false";
+    }
 
 
 
