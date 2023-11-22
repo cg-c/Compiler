@@ -2,14 +2,20 @@ package edu.ufl.cise.cop4020fa23;
 
 
 import edu.ufl.cise.cop4020fa23.ast.*;
+import edu.ufl.cise.cop4020fa23.ast.Dimension;
+import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
+import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 
 //import static edu.ufl.cise.cop4020fa23.SymbolTable.numScopesPopped;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 
@@ -34,7 +40,14 @@ public class CodeGen implements ASTVisitor {
         }
         if (type == Type.BOOLEAN) {
             return "boolean";
-        } else {
+        }
+        if (type == Type.IMAGE) {
+            return "BufferedImage";
+        }
+        if (type == Type.PIXEL) {
+            return "int";
+        }
+        else {
             return null; //or just throw exception?
         }
     }
@@ -117,14 +130,10 @@ public class CodeGen implements ASTVisitor {
         temp.append("}\n");
         //result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
 
-
-
         for (String i : imports) {
             result.append(i);
         }
         result.append(temp);
-
-
 
         symblTable.leaveScope();
         return result.toString();
@@ -178,12 +187,75 @@ public class CodeGen implements ASTVisitor {
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement assignmentStatement, Object arg) throws PLCCompilerException {
-        //symblTable.enterScope();
         StringBuilder temp = new StringBuilder();
-        temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
-        temp.append("=");
-        temp.append(assignmentStatement.getE().visit(this, arg).toString());
-        //symblTable.leaveScope();
+
+        if (assignmentStatement.getlValue().getType() == Type.IMAGE) {
+            if (assignmentStatement.getlValue().getPixelSelector() == null && assignmentStatement.getlValue().getChannelSelector() == null) {
+                imports.add("import edu.ufl.cise.cop4020fa23.ImageOps;\n");
+                if (assignmentStatement.getE().getType() == Type.IMAGE) {
+                    temp.append("ImageOps.copyInto(");
+                    temp.append(assignmentStatement.getE().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+                    temp.append(")");
+                }
+                else if (assignmentStatement.getE().getType() == Type.PIXEL) {
+                    temp.append("ImageOps.setAllPixels(");
+                    temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(assignmentStatement.getE().visit(this, arg).toString());
+                    temp.append(")");
+                }
+                else if (assignmentStatement.getE().getType() == Type.STRING) {
+                    temp.append("ImageOps.copyInto(FileURLIO.readImage(");
+                    temp.append(assignmentStatement.getE().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+                    temp.append("))");
+                }
+            }
+            else if (assignmentStatement.getlValue().getChannelSelector() != null) {
+                throw new UnsupportedOperationException("AssignmentStatement, cs not null");
+            }
+            else if (assignmentStatement.getlValue().getPixelSelector() != null && assignmentStatement.getlValue().getChannelSelector() == null) {
+// I HAVE NO IDEA?????
+                SyntheticNameDef var;
+                // In this case, we added a SyntheticNameDef object for the variable.
+                // For each variable whose nameDef is actually a SyntheticNameDef object,
+                // we generate code for an implicit loop over the values of that variable.
+
+                // Ex:   Im0[x,y] = im1[y,x]
+                //where x and y are not previously declared and thus their NameDef objects in the AST are
+                //SyntheticNameDef. Generate code to loop over x and y from 0 to im0.getWidth() and from 0 to
+                //im0.getHeight(), respectively and update each pixel with the value of the expression on the right
+                //side
+            }
+
+        }
+        else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
+            imports.add("import edu.ufl.cise.cop4020fa23.PixelOps;\n");
+            switch (assignmentStatement.getlValue().getChannelSelector().color()) {
+                case RES_blue -> {
+                    temp.append("PixelOps.setBlue(");
+                }
+                case RES_green -> {
+                    temp.append("PixelOps.setGreen(");
+                }
+                case RES_red -> {
+                    temp.append("PixelOps.setRed(");
+                }
+            }
+            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+            temp.append(",");
+            temp.append(assignmentStatement.getE().visit(this, arg).toString());
+            temp.append(")");
+        }
+        else {
+            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+            temp.append("=");
+            temp.append(assignmentStatement.getE().visit(this, arg).toString());
+        }
+
         return temp.toString();
     }
 
@@ -217,7 +289,6 @@ public class CodeGen implements ASTVisitor {
             temp.append(")");
         }
 
-
         return temp.toString();
     }
 
@@ -225,7 +296,6 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-
 
         temp.append("(");
         temp.append((conditionalExpr.getGuardExpr().visit(this, arg)).toString()); //do we need to visit first
@@ -248,14 +318,55 @@ public class CodeGen implements ASTVisitor {
         String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
 
         if (expr != null) {
-            temp.append(nameDef$);
-            temp.append("=");
-            temp.append(expr.visit(this, arg).toString());
+            if (declaration.getNameDef().getType() != Type.IMAGE) {
+                temp.append(nameDef$);
+                temp.append("=");
+                temp.append(expr.visit(this, arg).toString());
+            }
+            else {
+                if (expr.getType() == Type.STRING) {
+                    imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
+                        temp.append("FileURLIO.readImage(");
+                        temp.append(expr.visit(this, arg).toString());
+                        temp.append(")");
+                }
+                else if (expr.getType() == Type.IMAGE ) {
+                    if (declaration.getNameDef().getDimension() == null) {
+                        temp.append("ImageOps.cloneImage(");
+                        temp.append(expr.visit(this, arg).toString());
+                        temp.append(")");
+                    }
+                    else {
+                        temp.append("ImageOps.copyAndResize(");
+                        temp.append(expr.visit(this, arg).toString());
+                        temp.append(",");
+                        temp.append(declaration.getNameDef().getDimension().getWidth().visit(this, arg).toString());
+                        temp.append(",");
+                        temp.append(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
+                        temp.append(")");
+                    }
+                }
+            }
         }
         else {
-            temp.append(nameDef$);
+            if (declaration.getNameDef().getType() != Type.IMAGE) {
+                temp.append(nameDef$);
+            }
+            else {
+                if (declaration.getNameDef().getDimension() == null) {
+                    throw new CodeGenException("no dimension in dec");
+                }
+//                int width = Integer.parseInt(declaration.getNameDef().getDimension().getWidth().visit(this, arg).toString());
+//                int height = Integer.parseInt(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
+//                BufferedImage img = ImageOps.makeImage(width, height);
+                temp.append("final ");
+                temp.append(nameDef$);
+                temp.append("=");
+                temp.append("ImageOps.makeImage(");
+                temp.append(declaration.getNameDef().getDimension().visit(this, arg));
+                temp.append(")");
+            }
         }
-
 
         return temp.toString();
     }
@@ -314,10 +425,22 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
+
         temp.append("(");
-        temp.append(convertOp(unaryExpr.getOp()));
-        temp.append(unaryExpr.getExpr().visit(this, arg).toString());
+        if (unaryExpr.getOp() == Kind.RES_height) {
+            temp.append(unaryExpr.getExpr().visit(this, arg).toString());
+            temp.append(".getHeight()");
+        }
+        else if (unaryExpr.getOp() == Kind.RES_width) {
+            temp.append(unaryExpr.getExpr().visit(this, arg).toString());
+            temp.append(".getWidth()");
+        }
+        else {
+            temp.append(convertOp(unaryExpr.getOp()));
+            temp.append(unaryExpr.getExpr().visit(this, arg).toString());
+        }
         temp.append(")");
+
         return temp.toString();
     }
 
@@ -328,7 +451,12 @@ public class CodeGen implements ASTVisitor {
         imports.add("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         //System.out.println("import added");
         //result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
-        temp.append("ConsoleIO.write(");
+        if (writeStatement.getExpr().getType() == Type.PIXEL) {
+            temp.append("ConsoleIO.writePixel(");
+        }
+        else {
+            temp.append("ConsoleIO.write(");
+        }
         temp.append(writeStatement.getExpr().visit(this, arg).toString());
         temp.append(")");
 
@@ -351,84 +479,180 @@ public class CodeGen implements ASTVisitor {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //FOR LATER
-    //-------------
-
-
     @Override
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        List<GuardedBlock> guardedBlocks = ifStatement.getGuardedBlocks();
+            for (int i = 0; i < guardedBlocks.size(); i++) {
+                //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
+                //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
+                //System.out.println("here");
+                if (guardedBlocks.get(i).getGuard().visit(this,arg).equals(true)) {
+                    System.out.println("reheac");
+                    temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
+                    break;
+                }
+            }
+        return temp.toString();
     }
 
 
     @Override
     public Object visitPostfixExpr(PostfixExpr postfixExpr, Object arg) throws PLCCompilerException {
 
+        StringBuilder temp = new StringBuilder();
 
-        throw new UnsupportedOperationException();
+        if (postfixExpr.primary().getType() == Type.PIXEL) {
+            temp.append(postfixExpr.channel().visit(this, arg).toString());
+            temp.append("(");
+            temp.append(postfixExpr.primary().visit(this, arg).toString());
+            temp.append(")");
+        }
+        else {
+            if (postfixExpr.channel() != null && postfixExpr.pixel() == null) {
+                temp.append("ImageOps.getRGB(");
+                temp.append(postfixExpr.primary().visit(this, arg));
+                temp.append(",");
+                temp.append(postfixExpr.pixel().visit(this, arg));
+                temp.append(")");
+            }
+            else if (postfixExpr.channel() != null && postfixExpr.pixel() != null) {
+                temp.append(postfixExpr.channel().visit(this, arg));
+                temp.append("(ImageOps.getRGB(");
+                temp.append(postfixExpr.primary().visit(this, arg));
+                temp.append(",");
+                temp.append(postfixExpr.pixel().visit(this, arg));
+                temp.append("))");
+            }
+            else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+                if (postfixExpr.channel().color() == Kind.RES_blue) {
+                    temp.append("ImageOps.extractBlue(");
+                }
+                else if (postfixExpr.channel().color() == Kind.RES_green) {
+                    temp.append("ImageOps.extractGreen(");
+                }
+                else {
+                    temp.append("ImageOps.extractRed(");
+                }
+                temp.append(postfixExpr.primary().visit(this, arg));
+                temp.append(")");
+            }
+        }
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        temp.append(pixelSelector.xExpr().visit(this, arg).toString());
+        temp.append(",");
+        temp.append(pixelSelector.yExpr().visit(this, arg).toString());
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+        temp.append("PixelOps.pack(");
+        temp.append(expandedPixelExpr.getRed().visit(this, arg).toString());
+        temp.append(",");
+        temp.append(expandedPixelExpr.getGreen().visit(this, arg).toString());
+        temp.append(",");
+        temp.append(expandedPixelExpr.getBlue().visit(this, arg).toString());
+        temp.append(")");
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+       //if (guardedBlock.getGuard())
+        List<Block.BlockElem> ele = guardedBlock.getBlock().getElems();
+//        guardedBlock.getGuard();
+        for (int i = 0; i < ele.size(); i++) {
+            if (ele.get(i).visit(this, arg).equals(true)) {
+                temp.append(ele.get(i).visit(this, arg).toString());
+            }
+        }
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+//        temp.append();
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        temp.append(dimension.getWidth().visit(this, arg).toString());
+        temp.append(",");
+        temp.append(dimension.getHeight().visit(this, arg).toString());
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        
+        List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
+        while (true) {
+            int numExecuted = 0;
+            for (int i = 0; i < guardedBlocks.size(); i++) {
+                //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
+                //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
+
+
+                if (guardedBlocks.get(i).getGuard().visit(this,arg).toString().equals("true")) {
+                    temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
+                    numExecuted++;
+                }
+            }
+            if (numExecuted == 0) {
+                break;
+            }
+        }
+
+
+        return temp.toString();
     }
 
 
     @Override
     public Object visitConstExpr(ConstExpr constExpr, Object arg) throws PLCCompilerException {
-        throw new UnsupportedOperationException();
+        StringBuilder temp = new StringBuilder();
+        if (constExpr.getName().equals("Z")) {
+            temp.append("255");
+        } else {
+            //not sure if constExpr is a "BLUE", "RED", or "GREEN"
+            java.awt.Color color;
+            try {
+                java.lang.reflect.Field field = Class.forName("java.awt.Color").getField(constExpr.getName());
+                color = (java.awt.Color) field.get(null);
+            } catch (Exception e) {
+                throw new PLCCompilerException("Not a color");
+            }
+            ;
+            temp.append("0x");
+            temp.append(Integer.toHexString(color.getRGB()));
+        }
+        return temp.toString();
     }
 }
+
 
