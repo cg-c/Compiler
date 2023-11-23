@@ -640,16 +640,15 @@ public class CodeGen implements ASTVisitor {
             temp.append("255");
         } else {
             //not sure if constExpr is a "BLUE", "RED", or "GREEN"
-            java.awt.Color color;
+            java.awt.Color constColor;
             try {
                 java.lang.reflect.Field field = Class.forName("java.awt.Color").getField(constExpr.getName());
-                color = (java.awt.Color) field.get(null);
+                constColor = (java.awt.Color) field.get(null);
             } catch (Exception e) {
                 throw new PLCCompilerException("Not a color");
             }
-            ;
             temp.append("0x");
-            temp.append(Integer.toHexString(color.getRGB()));
+            temp.append(Integer.toHexString(constColor.getRGB()));
         }
         return temp.toString();
     }
