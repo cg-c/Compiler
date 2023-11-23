@@ -24,6 +24,7 @@ public class CodeGen implements ASTVisitor {
     String code = "";
     public Set<String> imports = new HashSet<>();
     SymbolTable symblTable = new SymbolTable();
+
     public CodeGen(String x) {
         code = x;
     }
@@ -46,8 +47,7 @@ public class CodeGen implements ASTVisitor {
         }
         if (type == Type.PIXEL) {
             return "int";
-        }
-        else {
+        } else {
             return null; //or just throw exception?
         }
     }
@@ -79,10 +79,10 @@ public class CodeGen implements ASTVisitor {
             case LE -> {
                 return "<=";
             }
-            case ASSIGN ->  {
+            case ASSIGN -> {
                 return "=";
             }
-            case GE-> {
+            case GE -> {
                 return ">=";
             }
             case OR -> {
@@ -114,7 +114,8 @@ public class CodeGen implements ASTVisitor {
         Type t = program.getType();
         symblTable.enterScope();
         result.append("package edu.ufl.cise.cop4020fa23;\n");
-        temp.append("public class ");temp.append(ident);
+        temp.append("public class ");
+        temp.append(ident);
         temp.append(" {\npublic static ");
         temp.append(convertType(t));
         temp.append(" apply(");
@@ -198,26 +199,22 @@ public class CodeGen implements ASTVisitor {
                     temp.append(",");
                     temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
                     temp.append(")");
-                }
-                else if (assignmentStatement.getE().getType() == Type.PIXEL) {
+                } else if (assignmentStatement.getE().getType() == Type.PIXEL) {
                     temp.append("ImageOps.setAllPixels(");
                     temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
                     temp.append(",");
                     temp.append(assignmentStatement.getE().visit(this, arg).toString());
                     temp.append(")");
-                }
-                else if (assignmentStatement.getE().getType() == Type.STRING) {
+                } else if (assignmentStatement.getE().getType() == Type.STRING) {
                     temp.append("ImageOps.copyInto(FileURLIO.readImage(");
                     temp.append(assignmentStatement.getE().visit(this, arg).toString());
                     temp.append(",");
                     temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
                     temp.append("))");
                 }
-            }
-            else if (assignmentStatement.getlValue().getChannelSelector() != null) {
+            } else if (assignmentStatement.getlValue().getChannelSelector() != null) {
                 throw new UnsupportedOperationException("AssignmentStatement, cs not null");
-            }
-            else if (assignmentStatement.getlValue().getPixelSelector() != null && assignmentStatement.getlValue().getChannelSelector() == null) {
+            } else if (assignmentStatement.getlValue().getPixelSelector() != null && assignmentStatement.getlValue().getChannelSelector() == null) {
 // I HAVE NO IDEA?????
                 SyntheticNameDef var;
                 // In this case, we added a SyntheticNameDef object for the variable.
@@ -231,8 +228,7 @@ public class CodeGen implements ASTVisitor {
                 //side
             }
 
-        }
-        else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
+        } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
             imports.add("import edu.ufl.cise.cop4020fa23.PixelOps;\n");
             switch (assignmentStatement.getlValue().getChannelSelector().color()) {
                 case RES_blue -> {
@@ -249,8 +245,7 @@ public class CodeGen implements ASTVisitor {
             temp.append(",");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
             temp.append(")");
-        }
-        else {
+        } else {
             temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
             temp.append("=");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
@@ -273,15 +268,13 @@ public class CodeGen implements ASTVisitor {
             temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
             temp.append(")");
 //            result.append(";\n");
-        }
-        else if (op == Kind.EXP) {
+        } else if (op == Kind.EXP) {
             temp.append("((int)Math.round(Math.pow(");
             temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
             temp.append(",");
             temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
             temp.append(")))");
-        }
-        else {
+        } else {
             temp.append("(");
             temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
             temp.append(convertOp(op));
@@ -322,21 +315,18 @@ public class CodeGen implements ASTVisitor {
                 temp.append(nameDef$);
                 temp.append("=");
                 temp.append(expr.visit(this, arg).toString());
-            }
-            else {
+            } else {
                 if (expr.getType() == Type.STRING) {
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
-                        temp.append("FileURLIO.readImage(");
-                        temp.append(expr.visit(this, arg).toString());
-                        temp.append(")");
-                }
-                else if (expr.getType() == Type.IMAGE ) {
+                    temp.append("FileURLIO.readImage(");
+                    temp.append(expr.visit(this, arg).toString());
+                    temp.append(")");
+                } else if (expr.getType() == Type.IMAGE) {
                     if (declaration.getNameDef().getDimension() == null) {
                         temp.append("ImageOps.cloneImage(");
                         temp.append(expr.visit(this, arg).toString());
                         temp.append(")");
-                    }
-                    else {
+                    } else {
                         temp.append("ImageOps.copyAndResize(");
                         temp.append(expr.visit(this, arg).toString());
                         temp.append(",");
@@ -347,12 +337,10 @@ public class CodeGen implements ASTVisitor {
                     }
                 }
             }
-        }
-        else {
+        } else {
             if (declaration.getNameDef().getType() != Type.IMAGE) {
                 temp.append(nameDef$);
-            }
-            else {
+            } else {
                 if (declaration.getNameDef().getDimension() == null) {
                     throw new CodeGenException("no dimension in dec");
                 }
@@ -430,12 +418,10 @@ public class CodeGen implements ASTVisitor {
         if (unaryExpr.getOp() == Kind.RES_height) {
             temp.append(unaryExpr.getExpr().visit(this, arg).toString());
             temp.append(".getHeight()");
-        }
-        else if (unaryExpr.getOp() == Kind.RES_width) {
+        } else if (unaryExpr.getOp() == Kind.RES_width) {
             temp.append(unaryExpr.getExpr().visit(this, arg).toString());
             temp.append(".getWidth()");
-        }
-        else {
+        } else {
             temp.append(convertOp(unaryExpr.getOp()));
             temp.append(unaryExpr.getExpr().visit(this, arg).toString());
         }
@@ -453,8 +439,7 @@ public class CodeGen implements ASTVisitor {
         //result.append("import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;\n");
         if (writeStatement.getExpr().getType() == Type.PIXEL) {
             temp.append("ConsoleIO.writePixel(");
-        }
-        else {
+        } else {
             temp.append("ConsoleIO.write(");
         }
         temp.append(writeStatement.getExpr().visit(this, arg).toString());
@@ -483,16 +468,22 @@ public class CodeGen implements ASTVisitor {
     public Object visitIfStatement(IfStatement ifStatement, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
         List<GuardedBlock> guardedBlocks = ifStatement.getGuardedBlocks();
-            for (int i = 0; i < guardedBlocks.size(); i++) {
-                //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
-                //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
-                //System.out.println("here");
-                if (guardedBlocks.get(i).getGuard().visit(this,arg).equals(true)) {
-                    System.out.println("reheac");
-                    temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
-                    break;
-                }
-            }
+        for (int i = 0; i < guardedBlocks.size(); i++) {
+
+            //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
+            //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
+            //System.out.println("here");
+            temp.append("if (");
+            temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
+            temp.append(" ) {\n");
+            symblTable.enterScope();
+            temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
+            temp.append("\n");
+        }
+        for (int i = 0; i < guardedBlocks.size(); i++) {
+            temp.append("}");
+            symblTable.leaveScope();
+        }
         return temp.toString();
     }
 
@@ -507,31 +498,26 @@ public class CodeGen implements ASTVisitor {
             temp.append("(");
             temp.append(postfixExpr.primary().visit(this, arg).toString());
             temp.append(")");
-        }
-        else {
+        } else {
             if (postfixExpr.channel() != null && postfixExpr.pixel() == null) {
                 temp.append("ImageOps.getRGB(");
                 temp.append(postfixExpr.primary().visit(this, arg));
                 temp.append(",");
                 temp.append(postfixExpr.pixel().visit(this, arg));
                 temp.append(")");
-            }
-            else if (postfixExpr.channel() != null && postfixExpr.pixel() != null) {
+            } else if (postfixExpr.channel() != null && postfixExpr.pixel() != null) {
                 temp.append(postfixExpr.channel().visit(this, arg));
                 temp.append("(ImageOps.getRGB(");
                 temp.append(postfixExpr.primary().visit(this, arg));
                 temp.append(",");
                 temp.append(postfixExpr.pixel().visit(this, arg));
                 temp.append("))");
-            }
-            else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
+            } else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
                 if (postfixExpr.channel().color() == Kind.RES_blue) {
                     temp.append("ImageOps.extractBlue(");
-                }
-                else if (postfixExpr.channel().color() == Kind.RES_green) {
+                } else if (postfixExpr.channel().color() == Kind.RES_green) {
                     temp.append("ImageOps.extractGreen(");
-                }
-                else {
+                } else {
                     temp.append("ImageOps.extractRed(");
                 }
                 temp.append(postfixExpr.primary().visit(this, arg));
@@ -573,7 +559,7 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitGuardedBlock(GuardedBlock guardedBlock, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-       //if (guardedBlock.getGuard())
+        //if (guardedBlock.getGuard())
         List<Block.BlockElem> ele = guardedBlock.getBlock().getElems();
 //        guardedBlock.getGuard();
         for (int i = 0; i < ele.size(); i++) {
@@ -609,23 +595,24 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitDoStatement(DoStatement doStatement, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-        
         List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
-        while (true) {
-            int numExecuted = 0;
+        int its = guardedBlocks.size();
+        if (its > 0) {
+            temp.append("while (true) { \nint numExecuted = 0;\n for (int i = 0; i < ");
+            temp.append(its);
+            temp.append("; i++) {");
             for (int i = 0; i < guardedBlocks.size(); i++) {
-                //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
-                //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
-
-
-                if (guardedBlocks.get(i).getGuard().visit(this,arg).toString().equals("true")) {
-                    temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
-                    numExecuted++;
-                }
+                symblTable.enterScope();
+                temp.append("\nif (");
+                temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
+                temp.append(") {\n");
+                temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
+                //temp.delete(temp.length()-2, temp.length()-1);
+                //maybe need to get rid of the {s around the block?
+                temp.append("\nnumExecuted++;\n}\n");
+                symblTable.leaveScope();
             }
-            if (numExecuted == 0) {
-                break;
-            }
+            temp.append("if (numExecuted == 0) {\nbreak;\n}\n}");
         }
 
 
