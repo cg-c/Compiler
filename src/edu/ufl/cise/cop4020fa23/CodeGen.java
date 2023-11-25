@@ -8,6 +8,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
+import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 
 //import static edu.ufl.cise.cop4020fa23.SymbolTable.numScopesPopped;
 
@@ -192,7 +193,7 @@ public class CodeGen implements ASTVisitor {
 
         if (assignmentStatement.getlValue().getType() == Type.IMAGE) {
             if (assignmentStatement.getlValue().getPixelSelector() == null && assignmentStatement.getlValue().getChannelSelector() == null) {
-                imports.add("import edu.ufl.cise.cop4020fa23.ImageOps;\n");
+                imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
                 if (assignmentStatement.getE().getType() == Type.IMAGE) {
                     temp.append("ImageOps.copyInto(");
                     temp.append(assignmentStatement.getE().visit(this, arg).toString());
@@ -229,7 +230,7 @@ public class CodeGen implements ASTVisitor {
             }
 
         } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
-            imports.add("import edu.ufl.cise.cop4020fa23.PixelOps;\n");
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
             switch (assignmentStatement.getlValue().getChannelSelector().color()) {
                 case RES_blue -> {
                     temp.append("PixelOps.setBlue(");
@@ -308,13 +309,15 @@ public class CodeGen implements ASTVisitor {
 
         Expr expr = declaration.getInitializer();
         StringBuilder temp = new StringBuilder();
-        String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
+//        String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
 
         if (expr != null) {
             if (declaration.getNameDef().getType() != Type.IMAGE) {
+                String rhs = expr.visit(this, arg).toString();
+                String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
                 temp.append(nameDef$);
                 temp.append("=");
-                temp.append(expr.visit(this, arg).toString());
+                temp.append(rhs);
             } else {
                 if (expr.getType() == Type.STRING) {
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
@@ -322,6 +325,7 @@ public class CodeGen implements ASTVisitor {
                     temp.append(expr.visit(this, arg).toString());
                     temp.append(")");
                 } else if (expr.getType() == Type.IMAGE) {
+                    imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
                     if (declaration.getNameDef().getDimension() == null) {
                         temp.append("ImageOps.cloneImage(");
                         temp.append(expr.visit(this, arg).toString());
@@ -338,6 +342,7 @@ public class CodeGen implements ASTVisitor {
                 }
             }
         } else {
+            String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
             if (declaration.getNameDef().getType() != Type.IMAGE) {
                 temp.append(nameDef$);
             } else {
@@ -347,6 +352,9 @@ public class CodeGen implements ASTVisitor {
 //                int width = Integer.parseInt(declaration.getNameDef().getDimension().getWidth().visit(this, arg).toString());
 //                int height = Integer.parseInt(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
 //                BufferedImage img = ImageOps.makeImage(width, height);
+                imports.add("import java.awt.image.BufferedImage;\n");
+                imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+
                 temp.append("final ");
                 temp.append(nameDef$);
                 temp.append("=");
@@ -499,6 +507,7 @@ public class CodeGen implements ASTVisitor {
             temp.append(postfixExpr.primary().visit(this, arg).toString());
             temp.append(")");
         } else {
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
             if (postfixExpr.channel() != null && postfixExpr.pixel() == null) {
                 temp.append("ImageOps.getRGB(");
                 temp.append(postfixExpr.primary().visit(this, arg));
@@ -575,7 +584,18 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
-//        temp.append();
+
+//        switch (channelSelector.color()) {
+//            case RES_red -> {
+//
+//            }
+//            case RES_blue -> {
+//
+//            }
+//            case RES_green -> {
+//
+//            }
+//        }
 
         return temp.toString();
     }
