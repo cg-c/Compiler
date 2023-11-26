@@ -584,18 +584,19 @@ public class CodeGen implements ASTVisitor {
     @Override
     public Object visitChannelSelector(ChannelSelector channelSelector, Object arg) throws PLCCompilerException {
         StringBuilder temp = new StringBuilder();
+        imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
 
-//        switch (channelSelector.color()) {
-//            case RES_red -> {
-//
-//            }
-//            case RES_blue -> {
-//
-//            }
-//            case RES_green -> {
-//
-//            }
-//        }
+        switch (channelSelector.color()) {
+            case RES_red -> {
+                temp.append("PixelOps.red");
+            }
+            case RES_blue -> {
+                temp.append("PixelOps.blue");
+            }
+            case RES_green -> {
+                temp.append("PixelOps.green");
+            }
+        }
 
         return temp.toString();
     }

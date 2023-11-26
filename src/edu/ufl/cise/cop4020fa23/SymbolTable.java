@@ -1,8 +1,10 @@
 package edu.ufl.cise.cop4020fa23;
 
 import edu.ufl.cise.cop4020fa23.ast.NameDef;
+import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.exceptions.TypeCheckException;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +68,14 @@ public class SymbolTable {
         }
     }
 
-    public int getScope(String name) {
+    public int getScope(String name) throws PLCCompilerException {
         for (int i = scopes.size() - 1; i > - 1; i--) {
             HashMap<String, NameDef> scopeChecked;
             scopeChecked = scopes.get(i);
             if (scopeChecked.containsKey(name)) {
-                return (i+1);
+                return (i);
             }
         }
-        return -1;
+        throw new PLCCompilerException("Not in scope");
     }
 }
