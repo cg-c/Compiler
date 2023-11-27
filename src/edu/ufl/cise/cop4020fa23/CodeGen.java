@@ -337,7 +337,10 @@ public class CodeGen implements ASTVisitor {
             } else {
                 if (expr.getType() == Type.STRING) {
                     String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
+                    imports.add("import java.awt.image.BufferedImage;\n");
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
+                    temp.append(nameDef$);
+                    temp.append("=");
                     temp.append("FileURLIO.readImage(");
                     temp.append(expr.visit(this, arg).toString());
                     if (declaration.getNameDef().getDimension() != null) {
