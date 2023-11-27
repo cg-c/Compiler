@@ -14,6 +14,7 @@ import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -216,17 +217,29 @@ public class CodeGen implements ASTVisitor {
             } else if (assignmentStatement.getlValue().getChannelSelector() != null) {
                 throw new UnsupportedOperationException("AssignmentStatement, cs not null");
             } else if (assignmentStatement.getlValue().getPixelSelector() != null && assignmentStatement.getlValue().getChannelSelector() == null) {
-// I HAVE NO IDEA?????
-                SyntheticNameDef var;
-                // In this case, we added a SyntheticNameDef object for the variable.
-                // For each variable whose nameDef is actually a SyntheticNameDef object,
-                // we generate code for an implicit loop over the values of that variable.
+                temp.append("SyntheticNameDef ");
+                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+                temp.append(";");
 
-                // Ex:   Im0[x,y] = im1[y,x]
-                //where x and y are not previously declared and thus their NameDef objects in the AST are
-                //SyntheticNameDef. Generate code to loop over x and y from 0 to im0.getWidth() and from 0 to
-                //im0.getHeight(), respectively and update each pixel with the value of the expression on the right
-                //side
+                imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+
+                int w = Integer.parseInt(assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString());
+                int h = Integer.parseInt(assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString());
+                temp.append("for (int i = 0; i < ");
+                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+                temp.append(".getWidth(); i++) {\n");
+                temp.append("for (int j = 0; j < ");
+                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+                temp.append(".getHeight(); j++) {\n");
+                temp.append("ImageOps.setRGB(");
+                temp.append(assignmentStatement.getlValue().getNameDef());
+                temp.append(",");
+                temp.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString());
+                temp.append(",");
+                temp.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString());
+                temp.append(assignmentStatement.getE().visit(this, arg).toString());
+                temp.append(")\n}\n}");
+
             }
 
         } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
@@ -323,6 +336,12 @@ public class CodeGen implements ASTVisitor {
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
                     temp.append("FileURLIO.readImage(");
                     temp.append(expr.visit(this, arg).toString());
+                    if (declaration.getNameDef().getDimension() != null) {
+                        temp.append(",");
+                        temp.append(declaration.getNameDef().getDimension().getWidth().visit(this, arg).toString());
+                        temp.append(",");
+                        temp.append(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
+                    }
                     temp.append(")");
                 } else if (expr.getType() == Type.IMAGE) {
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
@@ -635,7 +654,6 @@ public class CodeGen implements ASTVisitor {
             }
             temp.append("if (numExecuted == 0) {\nbreak;\n}\n}");
         }
-
 
         return temp.toString();
     }
