@@ -24,11 +24,14 @@ import java.util.Set;
 public class CodeGen implements ASTVisitor {
     StringBuilder result = new StringBuilder();
     String code = "";
-    public Set<String> imports = new HashSet<>();
-    SymbolTable symblTable = new SymbolTable();
+    public Set<String> imports;
+    SymbolTable symblTable;
 
     public CodeGen(String x) {
         code = x;
+        symblTable = new SymbolTable();
+        imports = new HashSet<>();
+        result = new StringBuilder();
     }
 
     public String convertType(Type type) {
@@ -333,6 +336,7 @@ public class CodeGen implements ASTVisitor {
                 temp.append(rhs);
             } else {
                 if (expr.getType() == Type.STRING) {
+                    String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
                     temp.append("FileURLIO.readImage(");
                     temp.append(expr.visit(this, arg).toString());
@@ -344,6 +348,7 @@ public class CodeGen implements ASTVisitor {
                     }
                     temp.append(")");
                 } else if (expr.getType() == Type.IMAGE) {
+                    String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
                     if (declaration.getNameDef().getDimension() == null) {
                         temp.append("ImageOps.cloneImage(");
