@@ -54,7 +54,7 @@ class CodeGenTest_Hw5_starter {
 	void show(BufferedImage image) throws IOException {
 		if (VERBOSE) {
 			ConsoleIO.displayImageOnScreen(image);
-			if (WAIT_FOR_INPUT) {
+			if (false) { //change this back
 				System.out.println("Enter a char");
 				int ch = System.in.read();
 			}

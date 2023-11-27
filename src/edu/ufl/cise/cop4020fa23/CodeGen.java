@@ -348,16 +348,28 @@ public class CodeGen implements ASTVisitor {
                         temp.append(declaration.getNameDef().getDimension().getWidth().visit(this, arg).toString());
                         temp.append(",");
                         temp.append(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
-                    }
+                    } 
+//                    else {
+//                        String returnNameDef = declaration.getNameDef().visit(this, arg).toString();
+//                        temp.append(");\n");
+//                        temp.append(returnNameDef);
+//                        temp.append("=ImageOps.cloneImage(");
+//                        temp.append(declaration.getNameDef().getName());
+//                    }
                     temp.append(")");
-                } else if (expr.getType() == Type.IMAGE) {
+                }
+                else if (expr.getType() == Type.IMAGE) {
                     String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
                     imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
                     if (declaration.getNameDef().getDimension() == null) {
+                        temp.append(nameDef$);
+                        temp.append("=");
                         temp.append("ImageOps.cloneImage(");
                         temp.append(expr.visit(this, arg).toString());
                         temp.append(")");
                     } else {
+                        temp.append(nameDef$);
+                        temp.append("=");
                         temp.append("ImageOps.copyAndResize(");
                         temp.append(expr.visit(this, arg).toString());
                         temp.append(",");
