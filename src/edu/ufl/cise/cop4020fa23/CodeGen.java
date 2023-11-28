@@ -5,12 +5,6 @@ import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Dimension;
 import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
-import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
-import edu.ufl.cise.cop4020fa23.runtime.ConsoleIO;
-import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
-import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
-
-//import static edu.ufl.cise.cop4020fa23.SymbolTable.numScopesPopped;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -638,7 +632,7 @@ public class CodeGen implements ASTVisitor {
     }
 
     private String getBool(String s) {
-        if (s.indexOf("TRUE") != -1) {
+        if (s.contains("TRUE")) {
             return "true";
         }
         return "false";
