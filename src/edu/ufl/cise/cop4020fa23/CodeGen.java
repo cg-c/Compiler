@@ -240,11 +240,10 @@ public class CodeGen implements ASTVisitor {
                 temp.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString());
                 temp.append(",");
                 temp.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString());
+                temp.append(",");
                 temp.append(assignmentStatement.getE().visit(this, arg).toString());
                 temp.append(")\n}\n}");
-
             }
-
         } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
             switch (assignmentStatement.getlValue().getChannelSelector().color()) {
@@ -262,8 +261,74 @@ public class CodeGen implements ASTVisitor {
             temp.append(",");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
             temp.append(")");
+        } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() == null && assignmentStatement.getE().getType() == Type.INT)  {
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+
+            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+            temp.append("=");
+            temp.append("PixelOps.pack(");
+            String exp = assignmentStatement.getE().visit(this, arg).toString();
+            temp.append(exp);
+            temp.append(",");
+            temp.append(exp);
+            temp.append(",");
+            temp.append(exp);
+            temp.append(")");
+        }
+        else if (assignmentStatement.getlValue().getPixelSelector() != null) {
+//            temp.append("SyntheticNameDef "); // IDK REALLY
+//            temp.append(assignmentStatement.getlValue().getNameDef().getName());
+//            temp.append(";\n");
+
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+
+            String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
+            String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
+            String[] strArr = assignmentStatement.getlValue().getNameDef().visit(this, arg).toString().split(" ");
+            String name = strArr[1];
+            String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();
+            String y = assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString();
+
+            temp.append("for (int ");
+            temp.append(x);
+            temp.append("=0; ");
+            temp.append(x);
+            temp.append("<");
+            temp.append(name);
+            temp.append(".getWidth(); ");
+            temp.append(x);
+            temp.append("++) {\n");
+
+            temp.append("for (int ");
+            temp.append(y);
+            temp.append("=0;");
+            temp.append(y);
+            temp.append("<");
+            temp.append(name);
+            temp.append(".getHeight(); ");
+            temp.append(y);
+            temp.append("++) {\n");
+
+            temp.append("ImageOps.setRGB(");
+            temp.append(name);
+            temp.append(",");
+            temp.append(x);
+            temp.append(",");
+            temp.append(y);
+            temp.append(",");
+            temp.append(assignmentStatement.getE().visit(this, arg).toString());
+            temp.append(");\n}\n}");
         } else {
             temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+
+            // NEED TO VISIT IF THERE???
+//            if (assignmentStatement.getlValue().getChannelSelector() != null) {
+//                assignmentStatement.getlValue().getChannelSelector().visit(this, arg);
+//            }
+//            if (assignmentStatement.getlValue().getPixelSelector() != null) {
+//                assignmentStatement.getlValue().getPixelSelector().visit(this, arg);
+//            }
+
             temp.append("=");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
         }
@@ -290,7 +355,9 @@ public class CodeGen implements ASTVisitor {
             Type rType = binaryExpr.getRightExpr().getType();
             switch (rType) {
                 case IMAGE -> {
-                    temp.append("(ImageOps.binaryImageImageOp(");
+                    temp.append("(ImageOps.binaryImageImageOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
                     temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
                     temp.append(",");
                     temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
@@ -378,7 +445,6 @@ public class CodeGen implements ASTVisitor {
         temp.append((conditionalExpr.getFalseExpr().visit(this, arg)).toString());
         temp.append(")");
 
-
         return temp.toString();
     }
 
@@ -439,6 +505,7 @@ public class CodeGen implements ASTVisitor {
             }
         } else {
             String nameDef$ = declaration.getNameDef().visit(this, arg).toString();
+
             if (declaration.getNameDef().getType() != Type.IMAGE) {
                 temp.append(nameDef$);
             } else {
@@ -470,6 +537,15 @@ public class CodeGen implements ASTVisitor {
         String name = identExpr.getNameDef().getName();
         temp.append(name);
         temp.append("$");
+
+        try {
+            symblTable.getScope(name);
+        }
+        catch (PLCCompilerException e) {
+            identExpr.getNameDef().visit(this, arg);
+//            symblTable.insert(name, identExpr.getNameDef());
+        }
+
         temp.append(symblTable.getScope(name));
 
         return temp.toString();
@@ -483,6 +559,7 @@ public class CodeGen implements ASTVisitor {
         temp.append(name);
         temp.append("$");
         temp.append(symblTable.getScope(name));
+
 
         return temp.toString();
     }
