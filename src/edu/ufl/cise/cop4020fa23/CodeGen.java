@@ -285,6 +285,69 @@ public class CodeGen implements ASTVisitor {
             temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
             temp.append(")");
 //            result.append(";\n");
+        } else if (lType == Type.IMAGE) {
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+            Type rType = binaryExpr.getRightExpr().getType();
+            switch (rType) {
+                case IMAGE -> {
+                    temp.append("(ImageOps.binaryImageImageOp(");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+                case PIXEL -> {
+                    temp.append("(ImageOps.binaryImagePixelOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+                case INT -> {
+                    temp.append("(ImageOps.binaryImageIntOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+            }
+        } else if (lType == Type.PIXEL) {
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+            Type rType = binaryExpr.getRightExpr().getType();
+            switch (rType) {
+                case BOOLEAN -> {
+                    temp.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+                case PIXEL -> {
+                    temp.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+                case INT -> {
+                    temp.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
+                    temp.append(op);
+                    temp.append(",");
+                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                    temp.append(",");
+                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                    temp.append("))");
+                }
+            }
+
         } else if (op == Kind.EXP) {
             temp.append("((int)Math.round(Math.pow(");
             temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
@@ -349,13 +412,7 @@ public class CodeGen implements ASTVisitor {
                         temp.append(",");
                         temp.append(declaration.getNameDef().getDimension().getHeight().visit(this, arg).toString());
                     } 
-//                    else {
-//                        String returnNameDef = declaration.getNameDef().visit(this, arg).toString();
-//                        temp.append(");\n");
-//                        temp.append(returnNameDef);
-//                        temp.append("=ImageOps.cloneImage(");
-//                        temp.append(declaration.getNameDef().getName());
-//                    }
+
                     temp.append(")");
                 }
                 else if (expr.getType() == Type.IMAGE) {
@@ -663,21 +720,27 @@ public class CodeGen implements ASTVisitor {
         List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
         int its = guardedBlocks.size();
         if (its > 0) {
-            temp.append("while (true) { \nint numExecuted = 0;\n for (int i = 0; i < ");
-            temp.append(its);
-            temp.append("; i++) {");
+            temp.append("boolean continue$0=false;\n");
+            temp.append("while (!continue$0) {\n ");
+            temp.append("continue$0=true;\n");
+//            temp.append(its);
+//            temp.append("; i++) {");
+
             for (int i = 0; i < guardedBlocks.size(); i++) {
                 symblTable.enterScope();
-                temp.append("\nif (");
+                temp.append("if (");
                 temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
                 temp.append(") {\n");
+                temp.append("continue$0=false;\n");
                 temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
+                temp.append(";\n}");
                 //temp.delete(temp.length()-2, temp.length()-1);
                 //maybe need to get rid of the {s around the block?
-                temp.append("\nnumExecuted++;\n}\n");
+                //temp.append("\nnumExecuted++;\n}\n");
                 symblTable.leaveScope();
             }
-            temp.append("if (numExecuted == 0) {\nbreak;\n}\n}");
+            temp.append("}");
+            //temp.append("if (numExecuted == 0) {\nbreak;\n}\n}");
         }
 
         return temp.toString();
