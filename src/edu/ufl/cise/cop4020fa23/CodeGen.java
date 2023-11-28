@@ -312,25 +312,6 @@ public class CodeGen implements ASTVisitor {
             temp.append(",");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
             temp.append(");\n}\n}");
-        } else if (assignmentStatement.getlValue().getChannelSelector() != null){
-            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
-            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
-            temp.append("=");
-            switch (assignmentStatement.getlValue().getChannelSelector().color()) {
-                case RES_blue -> {
-                    temp.append("PixelOps.setBlue(");
-                }
-                case RES_green -> {
-                    temp.append("PixelOps.setGreen(");
-                }
-                case RES_red -> {
-                    temp.append("PixelOps.setRed(");
-                }
-            }
-            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
-            temp.append(",");
-            temp.append(assignmentStatement.getE().visit(this, arg).toString());
-            temp.append(")");
         } else {
             temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
 
