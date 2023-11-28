@@ -669,17 +669,13 @@ public class CodeGen implements ASTVisitor {
             //System.out.println("here");
             temp.append("if (");
             temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
-            temp.append(" )\n");
+            temp.append(" ) {\n");
             symblTable.enterScope();
-            //temp.append("else");
             temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
-            if (i < guardedBlocks.size() -1) {
-                temp.append("\nelse ");
-            }
-
+            temp.append("\n");
         }
         for (int i = 0; i < guardedBlocks.size(); i++) {
-            //temp.append("}");
+            temp.append("}");
             symblTable.leaveScope();
         }
         return temp.toString();
@@ -763,7 +759,6 @@ public class CodeGen implements ASTVisitor {
 //        guardedBlock.getGuard();
         for (int i = 0; i < ele.size(); i++) {
             if (ele.get(i).visit(this, arg).equals(true)) {
-                System.out.println(ele.get(i).visit(this, arg).toString());
                 temp.append(ele.get(i).visit(this, arg).toString());
             }
         }
