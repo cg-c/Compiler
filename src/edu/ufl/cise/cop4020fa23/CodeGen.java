@@ -5,6 +5,8 @@ import edu.ufl.cise.cop4020fa23.ast.*;
 import edu.ufl.cise.cop4020fa23.ast.Dimension;
 import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
+import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
+import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -205,38 +207,85 @@ public class CodeGen implements ASTVisitor {
                     temp.append(assignmentStatement.getE().visit(this, arg).toString());
                     temp.append(")");
                 } else if (assignmentStatement.getE().getType() == Type.STRING) {
+                    imports.add("import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;\n");
                     temp.append("ImageOps.copyInto(FileURLIO.readImage(");
                     temp.append(assignmentStatement.getE().visit(this, arg).toString());
-                    temp.append(",");
+                    temp.append("),");
                     temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
-                    temp.append("))");
+                    temp.append(")");
                 }
             } else if (assignmentStatement.getlValue().getChannelSelector() != null) {
                 throw new UnsupportedOperationException("AssignmentStatement, cs not null");
             } else if (assignmentStatement.getlValue().getPixelSelector() != null && assignmentStatement.getlValue().getChannelSelector() == null) {
-                temp.append("SyntheticNameDef ");
-                temp.append(assignmentStatement.getlValue().getNameDef().getName());
-                temp.append(";");
+//                temp.append("SyntheticNameDef ");
+//                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+//                temp.append(";");
 
                 imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
 
-                int w = Integer.parseInt(assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString());
-                int h = Integer.parseInt(assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString());
-                temp.append("for (int i = 0; i < ");
-                temp.append(assignmentStatement.getlValue().getNameDef().getName());
-                temp.append(".getWidth(); i++) {\n");
-                temp.append("for (int j = 0; j < ");
-                temp.append(assignmentStatement.getlValue().getNameDef().getName());
-                temp.append(".getHeight(); j++) {\n");
+                String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
+                String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
+                String[] strArr = assignmentStatement.getlValue().getNameDef().visit(this, arg).toString().split(" ");
+                String name = strArr[1];
+                String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();
+                String y = assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString();
+
+                if (!assignmentStatement.getlValue().getPixelSelector().xExpr().toString().contains("IdentExpr")) {
+                    SyntheticNameDef xND = new SyntheticNameDef("x" + x);
+                    String[] arr = xND.visit(this, arg).toString().split(" ");
+                    x = arr[1];
+                }
+                if (!assignmentStatement.getlValue().getPixelSelector().yExpr().toString().contains("IdentExpr")) {
+                    SyntheticNameDef yND = new SyntheticNameDef("y" + y);
+                    String[] arr = yND.visit(this, arg).toString().split(" ");
+                    y = arr[1];
+                }
+
+                temp.append("for (int ");
+                temp.append(x);
+                temp.append("=0; ");
+                temp.append(x);
+                temp.append("<");
+                temp.append(name);
+                temp.append(".getWidth(); ");
+                temp.append(x);
+                temp.append("++) {\n");
+
+                temp.append("for (int ");
+                temp.append(y);
+                temp.append("=0;");
+                temp.append(y);
+                temp.append("<");
+                temp.append(name);
+                temp.append(".getHeight(); ");
+                temp.append(y);
+                temp.append("++) {\n");
+
                 temp.append("ImageOps.setRGB(");
-                temp.append(assignmentStatement.getlValue().getNameDef());
+                temp.append(name);
                 temp.append(",");
-                temp.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString());
+                temp.append(x);
                 temp.append(",");
-                temp.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString());
+                temp.append(y);
                 temp.append(",");
                 temp.append(assignmentStatement.getE().visit(this, arg).toString());
-                temp.append(")\n}\n}");
+                temp.append(");\n}\n}");
+
+//                temp.append("for (int i = 0; i < ");
+//                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+//                temp.append(".getWidth(); i++) {\n");
+//                temp.append("for (int j = 0; j < ");
+//                temp.append(assignmentStatement.getlValue().getNameDef().getName());
+//                temp.append(".getHeight(); j++) {\n");
+//                temp.append("ImageOps.setRGB(");
+//                temp.append(assignmentStatement.getlValue().getNameDef());
+//                temp.append(",");
+//                temp.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString());
+//                temp.append(",");
+//                temp.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString());
+//                temp.append(",");
+//                temp.append(assignmentStatement.getE().visit(this, arg).toString());
+//                temp.append(")\n}\n}");
             }
         } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
@@ -282,6 +331,17 @@ public class CodeGen implements ASTVisitor {
             String name = strArr[1];
             String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();
             String y = assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString();
+
+            if (!assignmentStatement.getlValue().getPixelSelector().xExpr().toString().contains("IdentExpr")) {
+                SyntheticNameDef xND = new SyntheticNameDef("x" + x);
+                String[] arr = xND.visit(this, arg).toString().split(" ");
+                x = arr[1];
+            }
+            if (!assignmentStatement.getlValue().getPixelSelector().yExpr().toString().contains("IdentExpr")) {
+                SyntheticNameDef yND = new SyntheticNameDef("y" + y);
+                String[] arr = yND.visit(this, arg).toString().split(" ");
+                y = arr[1];
+            }
 
             temp.append("for (int ");
             temp.append(x);
@@ -369,65 +429,68 @@ public class CodeGen implements ASTVisitor {
             switch (rType) {
                 case IMAGE -> {
                     temp.append("(ImageOps.binaryImageImageOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
                 }
                 case PIXEL -> {
                     temp.append("(ImageOps.binaryImagePixelOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
                 }
                 case INT -> {
                     temp.append("(ImageOps.binaryImageIntOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
                 }
             }
+            temp.append(op);
+            temp.append(",");
+            temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+            temp.append(",");
+            temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+            temp.append("))");
         } else if (lType == Type.PIXEL) {
-            imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
-            Type rType = binaryExpr.getRightExpr().getType();
-            switch (rType) {
-                case BOOLEAN -> {
-                    temp.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
-                }
-                case PIXEL -> {
-                    temp.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
-                }
-                case INT -> {
-                    temp.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
-                    temp.append(op);
-                    temp.append(",");
-                    temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
-                    temp.append(",");
-                    temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
-                    temp.append("))");
-                }
-            }
 
+            if (op == Kind.DIV || op == Kind.TIMES || op == Kind.MINUS || op == Kind.PLUS) {
+
+                imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+                Type rType = binaryExpr.getRightExpr().getType();
+                switch (rType) {
+                    case BOOLEAN -> {
+                        temp.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.BoolOP.");
+                        if (op == Kind.EQ) {
+                            temp.append("EQUALS");
+                        }
+                        else {
+                            temp.append("NOT_EQUALS");
+                        }
+                    }
+                    case PIXEL -> {
+                        temp.append("(ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.");
+                        temp.append(op);
+                    }
+                    case INT -> {
+                        temp.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
+                        temp.append(op);
+                    }
+                }
+                temp.append(",");
+                temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                temp.append(",");
+                temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                temp.append("))");
+            }
+            else {
+                imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
+                temp.append("(ImageOps.binaryPackedPixelBooleanOp(ImageOps.BoolOP.");
+
+                if (op == Kind.EQ) {
+                    temp.append("EQUALS");
+                }
+                else {
+                    temp.append("NOT_EQUALS");
+                }
+
+                temp.append(",");
+                temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
+                temp.append(",");
+                temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
+                temp.append("))");
+            }
         } else if (op == Kind.EXP) {
             temp.append("((int)Math.round(Math.pow(");
             temp.append(binaryExpr.getLeftExpr().visit(this, arg).toString());
@@ -441,6 +504,7 @@ public class CodeGen implements ASTVisitor {
             temp.append(binaryExpr.getRightExpr().visit(this, arg).toString());
             temp.append(")");
         }
+
 
         return temp.toString();
     }
@@ -699,10 +763,21 @@ public class CodeGen implements ASTVisitor {
         } else {
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
             if (postfixExpr.channel() != null && postfixExpr.pixel() == null) {
-                temp.append("ImageOps.getRGB(");
+//                ImageOps.getRGB()
+                temp.append("ImageOps.");
+                switch (postfixExpr.channel().color()) {
+                    case RES_blue -> {
+                        temp.append("extractBlue(");
+                    }
+                    case RES_green -> {
+                        temp.append("extractGreen(");
+                    }
+                    case RES_red -> {
+                        temp.append("extractRed(");
+                    }
+                }
                 temp.append(postfixExpr.primary().visit(this, arg));
-                temp.append(",");
-                temp.append(postfixExpr.pixel().visit(this, arg));
+
                 temp.append(")");
             } else if (postfixExpr.channel() != null && postfixExpr.pixel() != null) {
                 temp.append(postfixExpr.channel().visit(this, arg));
@@ -711,15 +786,11 @@ public class CodeGen implements ASTVisitor {
                 temp.append(",");
                 temp.append(postfixExpr.pixel().visit(this, arg));
                 temp.append("))");
-            } else if (postfixExpr.pixel() == null && postfixExpr.channel() != null) {
-                if (postfixExpr.channel().color() == Kind.RES_blue) {
-                    temp.append("ImageOps.extractBlue(");
-                } else if (postfixExpr.channel().color() == Kind.RES_green) {
-                    temp.append("ImageOps.extractGreen(");
-                } else {
-                    temp.append("ImageOps.extractRed(");
-                }
+            } else if (postfixExpr.pixel() != null && postfixExpr.channel() == null) {
+                temp.append("ImageOps.getRGB(");
                 temp.append(postfixExpr.primary().visit(this, arg));
+                temp.append(",");
+                temp.append(postfixExpr.pixel().visit(this, arg));
                 temp.append(")");
             }
         }
@@ -809,10 +880,20 @@ public class CodeGen implements ASTVisitor {
         StringBuilder temp = new StringBuilder();
         List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
         int its = guardedBlocks.size();
+        String cont = "false";
+        SyntheticNameDef contND = new SyntheticNameDef(cont);
+        cont = contND.visit(this, arg).toString();
+        String[] arr = cont.split(" ");
+        cont = arr[1];
+
         if (its > 0) {
-            temp.append("boolean continue$0=false;\n");
-            temp.append("while (!continue$0) {\n ");
-            temp.append("continue$0=true;\n");
+            temp.append("boolean ");
+            temp.append(cont);
+            temp.append("=false;\nwhile (!");
+            temp.append(cont);
+            temp.append(") {\n ");
+            temp.append(cont);
+            temp.append("=true;\n");
 //            temp.append(its);
 //            temp.append("; i++) {");
 
@@ -821,7 +902,8 @@ public class CodeGen implements ASTVisitor {
                 temp.append("if (");
                 temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
                 temp.append(") {\n");
-                temp.append("continue$0=false;\n");
+                temp.append(cont);
+                temp.append("=false;\n");
                 temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
                 temp.append(";\n}");
                 //temp.delete(temp.length()-2, temp.length()-1);
