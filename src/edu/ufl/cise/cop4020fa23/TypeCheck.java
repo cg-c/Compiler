@@ -109,7 +109,12 @@ public class TypeCheck implements ASTVisitor {
                     inferBiType = left;
                 }
                 else if ((left == Type.PIXEL || left == Type.IMAGE) && right == Type.INT) {
-                    inferBiType = Type.INT;
+                    if (left == Type.IMAGE) {
+                        inferBiType = Type.IMAGE;
+                    } else {
+                        inferBiType = Type.INT;
+                    }
+                    //inferBiType = Type.INT;
                 }
             }
         }

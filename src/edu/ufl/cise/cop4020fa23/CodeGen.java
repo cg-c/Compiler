@@ -271,21 +271,6 @@ public class CodeGen implements ASTVisitor {
                 temp.append(assignmentStatement.getE().visit(this, arg).toString());
                 temp.append(");\n}\n}");
 
-//                temp.append("for (int i = 0; i < ");
-//                temp.append(assignmentStatement.getlValue().getNameDef().getName());
-//                temp.append(".getWidth(); i++) {\n");
-//                temp.append("for (int j = 0; j < ");
-//                temp.append(assignmentStatement.getlValue().getNameDef().getName());
-//                temp.append(".getHeight(); j++) {\n");
-//                temp.append("ImageOps.setRGB(");
-//                temp.append(assignmentStatement.getlValue().getNameDef());
-//                temp.append(",");
-//                temp.append(assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString());
-//                temp.append(",");
-//                temp.append(assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString());
-//                temp.append(",");
-//                temp.append(assignmentStatement.getE().visit(this, arg).toString());
-//                temp.append(")\n}\n}");
             }
         } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() != null) {
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
@@ -332,6 +317,27 @@ public class CodeGen implements ASTVisitor {
             String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();
             String y = assignmentStatement.getlValue().getPixelSelector().yExpr().visit(this, arg).toString();
 
+            //check if x and/or y are a number, set variables to track these. Will be used further down on append. No for
+            //loops in such a circumstance and wherever x or y are used, it will need to be a number
+            System.out.println("test" + x);
+            int placementOfDollar = x.indexOf("$");
+            boolean numPresentX = true;
+            boolean numPresentY = true;
+            String xStr = "";
+            String yStr = "";
+            if (placementOfDollar > 0) {
+                System.out.println("reachd");
+                numPresentX = false;
+            } else {
+                xStr = x;
+            }
+            placementOfDollar = y.indexOf("$");
+            if (placementOfDollar > 0) {
+                numPresentY = false;
+            } else {
+                yStr = y;
+            }
+
             if (!assignmentStatement.getlValue().getPixelSelector().xExpr().toString().contains("IdentExpr")) {
                 SyntheticNameDef xND = new SyntheticNameDef("x" + x);
                 String[] arr = xND.visit(this, arg).toString().split(" ");
@@ -343,25 +349,33 @@ public class CodeGen implements ASTVisitor {
                 y = arr[1];
             }
 
-            temp.append("for (int ");
-            temp.append(x);
-            temp.append("=0; ");
-            temp.append(x);
-            temp.append("<");
-            temp.append(name);
-            temp.append(".getWidth(); ");
-            temp.append(x);
-            temp.append("++) {\n");
+            if (!numPresentX) {
+                temp.append("for (int ");
+                temp.append(x);
+                temp.append("=0; ");
+                temp.append(x);
+                temp.append("<");
+                temp.append(name);
+                temp.append(".getWidth(); ");
+                temp.append(x);
+                temp.append("++) {\n");
+            } else {
+                x = xStr;
+            }
 
-            temp.append("for (int ");
-            temp.append(y);
-            temp.append("=0;");
-            temp.append(y);
-            temp.append("<");
-            temp.append(name);
-            temp.append(".getHeight(); ");
-            temp.append(y);
-            temp.append("++) {\n");
+            if (!numPresentY) {
+                temp.append("for (int ");
+                temp.append(y);
+                temp.append("=0;");
+                temp.append(y);
+                temp.append("<");
+                temp.append(name);
+                temp.append(".getHeight(); ");
+                temp.append(y);
+                temp.append("++) {\n");
+            } else {
+                y = yStr;
+            }
 
             temp.append("ImageOps.setRGB(");
             temp.append(name);
@@ -371,7 +385,14 @@ public class CodeGen implements ASTVisitor {
             temp.append(y);
             temp.append(",");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
-            temp.append(");\n}\n}");
+            temp.append(");");
+            if (!numPresentX) {
+                temp.append("\n}");
+            }
+            if (!numPresentY) {
+                temp.append("\n}");
+            }
+
         } else {
             temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
 
@@ -415,7 +436,7 @@ public class CodeGen implements ASTVisitor {
                     temp.append("(ImageOps.binaryImagePixelOp(ImageOps.OP.");
                 }
                 case INT -> {
-                    temp.append("(ImageOps.binaryImageIntOp(ImageOps.OP.");
+                    temp.append("(ImageOps.binaryImageScalarOp(ImageOps.OP.");
                 }
             }
             temp.append(op);
@@ -445,7 +466,11 @@ public class CodeGen implements ASTVisitor {
                         temp.append(op);
                     }
                     case INT -> {
-                        temp.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
+                        if (op == Kind.TIMES || op == Kind.DIV) {
+                            temp.append("(ImageOps.binaryImageScalarOp(ImageOps.OP.");
+                        } else {
+                            temp.append("(ImageOps.binaryImageIntOp(ImageOps.OP.");
+                        }
                         temp.append(op);
                     }
                 }

@@ -1118,7 +1118,7 @@ class CodeGenTest_Hw5_starter {
                    image[w,h] im0 = url;
                    im0[x,0] = RED;
                    ^im0;
-                   :>
+                  :>
                    """;
 		String url = testURL;
 		int w = 200;
@@ -1203,11 +1203,12 @@ class CodeGenTest_Hw5_starter {
 		String url = testURL;
 		int w = 200;
 		int h = 300;
-		BufferedImage expected = FileURLIO.readImage(url);
+		BufferedImage expected = FileURLIO.readImage(url, w, h);
 		expected = ImageOps.copyAndResize(expected, w/2, h/2);
 		BufferedImage output = (BufferedImage) PLCLangExec.runCode(packageName, source, url, w, h);
 		compareImages(expected, output);
 	}
+
 
 
 	@Test
