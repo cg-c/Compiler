@@ -7,6 +7,7 @@ import edu.ufl.cise.cop4020fa23.exceptions.CodeGenException;
 import edu.ufl.cise.cop4020fa23.exceptions.PLCCompilerException;
 import edu.ufl.cise.cop4020fa23.runtime.FileURLIO;
 import edu.ufl.cise.cop4020fa23.runtime.ImageOps;
+import edu.ufl.cise.cop4020fa23.runtime.PixelOps;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -393,7 +394,29 @@ public class CodeGen implements ASTVisitor {
                 temp.append("\n}");
             }
 
-        } else {
+        } else if (assignmentStatement.getlValue().getChannelSelector() != null) {
+            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+            String lhs = assignmentStatement.getlValue().visit(this, arg).toString();
+            temp.append(lhs);
+            temp.append("=");
+            temp.append("PixelOps.");
+            switch (assignmentStatement.getlValue().getChannelSelector().color()) {
+                case RES_red -> {
+                    temp.append("setRed(");
+                }
+                case RES_green -> {
+                    temp.append("setGreen(");
+                }
+                case RES_blue -> {
+                    temp.append("setBlue(");
+                }
+            }
+            temp.append(lhs);
+            temp.append(",");
+            temp.append(assignmentStatement.getE().visit(this, arg).toString());
+            temp.append(")");
+        }
+        else {
             temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
 
             // NEED TO VISIT IF THERE???
@@ -737,15 +760,20 @@ public class CodeGen implements ASTVisitor {
             //guardedBlocks.get(i).getGuard().visit(this,arg).equals(true);
             //guardedBlocks.get(i).getGuard().visit(this,arg).toString();
             //System.out.println("here");
+            if (i > 0) {
+                temp.append("else ");
+            }
+
             temp.append("if (");
             temp.append(guardedBlocks.get(i).getGuard().visit(this, arg).toString());
-            temp.append(" ) {\n");
+            temp.append(") \n");
             symblTable.enterScope();
             temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
             temp.append("\n");
+//            temp.append("}");
         }
         for (int i = 0; i < guardedBlocks.size(); i++) {
-            temp.append("}");
+
             symblTable.leaveScope();
         }
         return temp.toString();
@@ -881,7 +909,7 @@ public class CodeGen implements ASTVisitor {
         StringBuilder temp = new StringBuilder();
         List<GuardedBlock> guardedBlocks = doStatement.getGuardedBlocks();
         int its = guardedBlocks.size();
-        String cont = "false";
+        String cont = "continue";
         SyntheticNameDef contND = new SyntheticNameDef(cont);
         cont = contND.visit(this, arg).toString();
         String[] arr = cont.split(" ");
