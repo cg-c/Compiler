@@ -224,8 +224,8 @@ public class CodeGen implements ASTVisitor {
 
                 imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
 
-                String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
-                String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
+//                String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
+//                String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
                 String[] strArr = assignmentStatement.getlValue().getNameDef().visit(this, arg).toString().split(" ");
                 String name = strArr[1];
                 String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();
@@ -290,20 +290,22 @@ public class CodeGen implements ASTVisitor {
             temp.append(",");
             temp.append(assignmentStatement.getE().visit(this, arg).toString());
             temp.append(")");
-        } else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() == null && assignmentStatement.getE().getType() == Type.INT)  {
-            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
-
-            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
-            temp.append("=");
-            temp.append("PixelOps.pack(");
-            String exp = assignmentStatement.getE().visit(this, arg).toString();
-            temp.append(exp);
-//            temp.append(",");
-//            temp.append(exp);
-//            temp.append(",");
-//            temp.append(exp);
-            temp.append(")");
         }
+//        else if (assignmentStatement.getlValue().getType() == Type.PIXEL && assignmentStatement.getlValue().getChannelSelector() == null && assignmentStatement.getlValue().getPixelSelector() != null)  {
+//            imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
+//
+//            temp.append(assignmentStatement.getlValue().visit(this, arg).toString());
+//            temp.append("=");
+////            temp.append("PixelOps.pack(");
+//            temp.append("(");
+//            String exp = assignmentStatement.getE().visit(this, arg).toString();
+//            temp.append(exp);
+////            temp.append(",");
+////            temp.append(exp);
+////            temp.append(",");
+////            temp.append(exp);
+//            temp.append(")");
+//        }
         else if (assignmentStatement.getlValue().getPixelSelector() != null) {
 //            temp.append("SyntheticNameDef "); // IDK REALLY
 //            temp.append(assignmentStatement.getlValue().getNameDef().getName());
@@ -490,9 +492,9 @@ public class CodeGen implements ASTVisitor {
                     }
                     case INT -> {
                         if (op == Kind.TIMES || op == Kind.DIV) {
-                            temp.append("(ImageOps.binaryImageScalarOp(ImageOps.OP.");
+                            temp.append("(ImageOps.binaryPackedPixelIntOp(ImageOps.OP.");
                         } else {
-                            temp.append("(ImageOps.binaryImageIntOp(ImageOps.OP.");
+                            temp.append("(ImageOps.binaryPackedPixelScalarOp(ImageOps.OP.");
                         }
                         temp.append(op);
                     }
@@ -934,7 +936,7 @@ public class CodeGen implements ASTVisitor {
                 temp.append(cont);
                 temp.append("=false;\n");
                 temp.append(guardedBlocks.get(i).getBlock().visit(this, arg).toString());
-                temp.append(";\n}");
+                temp.append("\n}");
                 //temp.delete(temp.length()-2, temp.length()-1);
                 //maybe need to get rid of the {s around the block?
                 //temp.append("\nnumExecuted++;\n}\n");
