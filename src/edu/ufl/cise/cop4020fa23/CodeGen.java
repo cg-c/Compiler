@@ -298,10 +298,10 @@ public class CodeGen implements ASTVisitor {
             temp.append("PixelOps.pack(");
             String exp = assignmentStatement.getE().visit(this, arg).toString();
             temp.append(exp);
-            temp.append(",");
-            temp.append(exp);
-            temp.append(",");
-            temp.append(exp);
+//            temp.append(",");
+//            temp.append(exp);
+//            temp.append(",");
+//            temp.append(exp);
             temp.append(")");
         }
         else if (assignmentStatement.getlValue().getPixelSelector() != null) {
