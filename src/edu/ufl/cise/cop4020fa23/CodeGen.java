@@ -241,8 +241,24 @@ public class CodeGen implements ASTVisitor {
                     String[] arr = yND.visit(this, arg).toString().split(" ");
                     y = arr[1];
                 }
+                boolean redeclaration = false;
+                //make this based on $ location
+                x = x.substring(0, 1);
 
-                temp.append("for (int ");
+                try {
+                    symblTable.getScope(x);
+                    redeclaration = true;
+                }
+                catch (PLCCompilerException e) {
+                     redeclaration = false;
+                }
+
+                if (redeclaration) {
+                    temp.append("for (");
+                } else {
+                    temp.append("for (int ");
+                }
+
                 temp.append(x);
                 temp.append("=0; ");
                 temp.append(x);
@@ -313,8 +329,10 @@ public class CodeGen implements ASTVisitor {
 
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.ImageOps;\n");
 
-            String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
-            String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
+            if (assignmentStatement.getlValue().getNameDef().getDimension() != null) {
+                String w = assignmentStatement.getlValue().getNameDef().getDimension().getWidth().visit(this, arg).toString();
+                String h = assignmentStatement.getlValue().getNameDef().getDimension().getHeight().visit(this, arg).toString();
+            }
             String[] strArr = assignmentStatement.getlValue().getNameDef().visit(this, arg).toString().split(" ");
             String name = strArr[1];
             String x = assignmentStatement.getlValue().getPixelSelector().xExpr().visit(this, arg).toString();

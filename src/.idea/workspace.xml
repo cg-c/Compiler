@@ -4,16 +4,9 @@
     <list default="true" id="938343fb-5225-4bf9-8fa1-17f9cec8c1a7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java" beforeDir="false" afterPath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGenTest_Hw5_starter.java" beforeDir="false" afterPath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGenTest_Hw5_starter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/TypeCheck.java" beforeDir="false" afterPath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/TypeCheck.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/runtime/ImageOps.java" beforeDir="false" afterPath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/runtime/ImageOps.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGenTest_Hw5_starter.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGenTest_Hw5_starter.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/SymbolTable.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/SymbolTable.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/TypeCheck.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/TypeCheck.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/runtime/ImageOps.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/runtime/ImageOps.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +42,7 @@
     &quot;last_opened_file_path&quot;: &quot;C:/Users/sb421/OneDrive/Desktop/PLC/PLC-Project&quot;
   }
 }</component>
-  <component name="RunManager" selected="JUnit.CodeGenTest_Hw5_starter">
+  <component name="RunManager" selected="JUnit.HW5Tests">
     <configuration name="CodeGenTest_Hw5_starter" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="PLC-Project" />
       <extension name="coverage">
@@ -61,54 +54,6 @@
       <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
       <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.CodeGenTest_Hw5_starter" />
       <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CodeGenTest_Hw5_starter.assignImageToImage" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="PLC-Project" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
-      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.CodeGenTest_Hw5_starter" />
-      <option name="METHOD_NAME" value="assignImageToImage" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CodeGenTest_Hw5_starter.doRunsTwice" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="PLC-Project" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
-      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.CodeGenTest_Hw5_starter" />
-      <option name="METHOD_NAME" value="doRunsTwice" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CodeGenTest_Hw5_starter.noImplicitLoop" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="PLC-Project" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
-      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.CodeGenTest_Hw5_starter" />
-      <option name="METHOD_NAME" value="noImplicitLoop" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -129,13 +74,60 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="HW5Tests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="PLC-Project" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
+      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.HW5Tests" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HW5Tests.test25" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="PLC-Project" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
+      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.HW5Tests" />
+      <option name="METHOD_NAME" value="test25" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HW5Tests.test41" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="PLC-Project" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="edu.ufl.cise.cop4020fa23.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="edu.ufl.cise.cop4020fa23" />
+      <option name="MAIN_CLASS_NAME" value="edu.ufl.cise.cop4020fa23.HW5Tests" />
+      <option name="METHOD_NAME" value="test41" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.HW5Tests" />
+        <item itemvalue="JUnit.HW5Tests.test41" />
+        <item itemvalue="JUnit.HW5Tests.test25" />
         <item itemvalue="JUnit.CodeGenTest_Hw5_starter" />
         <item itemvalue="JUnit.CodeGenTest_Hw5_starter.widthImplicitLoop" />
-        <item itemvalue="JUnit.CodeGenTest_Hw5_starter.doRunsTwice" />
-        <item itemvalue="JUnit.CodeGenTest_Hw5_starter.noImplicitLoop" />
-        <item itemvalue="JUnit.CodeGenTest_Hw5_starter.assignImageToImage" />
       </list>
     </recent_temporary>
   </component>
@@ -170,19 +162,24 @@
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/DynamicJavaCompileAndExecute/PLCLangExec.java</url>
-          <line>31</line>
-          <option name="timeStamp" value="12" />
+          <url>file://$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java</url>
+          <line>373</line>
+          <option name="timeStamp" value="16" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java</url>
-          <line>443</line>
-          <option name="timeStamp" value="13" />
+          <line>387</line>
+          <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java</url>
-          <line>445</line>
-          <option name="timeStamp" value="14" />
+          <line>324</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java</url>
+          <line>332</line>
+          <option name="timeStamp" value="20" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
