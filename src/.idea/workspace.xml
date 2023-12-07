@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="938343fb-5225-4bf9-8fa1-17f9cec8c1a7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java" beforeDir="false" afterPath="$PROJECT_DIR$/edu/ufl/cise/cop4020fa23/CodeGen.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PLC-Project/edu/ufl/cise/cop4020fa23/CodeGen.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

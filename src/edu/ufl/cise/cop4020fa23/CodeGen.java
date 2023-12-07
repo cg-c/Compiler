@@ -371,7 +371,7 @@ public class CodeGen implements ASTVisitor {
             }
 
             if (!numPresentX) {
-                temp.append("for (int ");
+                temp.append("for (int "); //the "int" should not be included when x has already been declared
                 temp.append(x);
                 temp.append("=0; ");
                 temp.append(x);
@@ -385,7 +385,7 @@ public class CodeGen implements ASTVisitor {
             }
 
             if (!numPresentY) {
-                temp.append("for (int ");
+                temp.append("for (int "); //the "int" should not be included when y has already been declared
                 temp.append(y);
                 temp.append("=0;");
                 temp.append(y);
