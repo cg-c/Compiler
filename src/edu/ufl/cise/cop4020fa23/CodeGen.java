@@ -340,14 +340,14 @@ public class CodeGen implements ASTVisitor {
 
             //check if x and/or y are a number, set variables to track these. Will be used further down on append. No for
             //loops in such a circumstance and wherever x or y are used, it will need to be a number
-            System.out.println("test" + x);
+//            System.out.println("test" + x);
             int placementOfDollar = x.indexOf("$");
             boolean numPresentX = true;
             boolean numPresentY = true;
             String xStr = "";
             String yStr = "";
             if (placementOfDollar > 0) {
-                System.out.println("reachd");
+//                System.out.println("reachd");
                 numPresentX = false;
             } else {
                 xStr = x;
