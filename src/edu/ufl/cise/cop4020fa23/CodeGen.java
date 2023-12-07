@@ -363,15 +363,38 @@ public class CodeGen implements ASTVisitor {
                 SyntheticNameDef xND = new SyntheticNameDef("x" + x);
                 String[] arr = xND.visit(this, arg).toString().split(" ");
                 x = arr[1];
+
+
             }
+
+
             if (!assignmentStatement.getlValue().getPixelSelector().yExpr().toString().contains("IdentExpr")) {
                 SyntheticNameDef yND = new SyntheticNameDef("y" + y);
                 String[] arr = yND.visit(this, arg).toString().split(" ");
                 y = arr[1];
             }
 
+
             if (!numPresentX) {
-                temp.append("for (int "); //the "int" should not be included when x has already been declared
+                Boolean appendInt = true;
+                try {
+                    int scope = symblTable.getScope(x.substring(0,x.indexOf('$')));
+                    if (scope < symblTable.scopes.size() - 1) {
+                        appendInt = false;
+                    }
+//                    x = x.substring(0, x.length() - 1);
+                }
+                catch (PLCCompilerException e) {
+//                    temp.append("for (int ");
+                }
+//                temp.append("for (int "); //the "int" should not be included when x has already been declared
+                if (appendInt) {
+                    temp.append("for (int ");
+                }
+                else {
+                    temp.append("for (");
+                }
+
                 temp.append(x);
                 temp.append("=0; ");
                 temp.append(x);
@@ -385,7 +408,23 @@ public class CodeGen implements ASTVisitor {
             }
 
             if (!numPresentY) {
-                temp.append("for (int "); //the "int" should not be included when y has already been declared
+                Boolean appendInt = true;
+                try {
+                    int scope = symblTable.getScope(x.substring(0,y.indexOf('$')));
+                    if (scope < symblTable.scopes.size() - 1) {
+                        appendInt = false;
+                    }
+                }
+                catch (PLCCompilerException e) {
+//                    temp.append("for (int ");
+                }
+//                temp.append("for (int "); //the "int" should not be included when y has already been declared
+                if (appendInt) {
+                    temp.append("for (int ");
+                }
+                else {
+                    temp.append("for (");
+                }
                 temp.append(y);
                 temp.append("=0;");
                 temp.append(y);
@@ -413,6 +452,7 @@ public class CodeGen implements ASTVisitor {
             if (!numPresentY) {
                 temp.append("\n}");
             }
+
 
         } else if (assignmentStatement.getlValue().getChannelSelector() != null) {
             imports.add("import edu.ufl.cise.cop4020fa23.runtime.PixelOps;\n");
